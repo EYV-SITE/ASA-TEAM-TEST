@@ -195,10 +195,76 @@
             
             <div class="exclusivo-texto">---</div>
             
-            <!-- Botón 1 -->
-            <a href="https://forms.gle/r4V3gwWJrKAiRNLx8" target="_blank" style="text-decoration: none;">
-                <button id="btnBodega">Ingreso / Egreso Bodega</button>
-            </a>
+            <!-- Botón 1: Ingreso / Egreso Bodega -->
+            <button id="btnBodega" onclick="toggleMenuBodega()">Ingreso / Egreso Bodega</button>
+
+            <!-- Menú Desplegable con opciones de Bodega -->
+            <div id="menuBodegaOpciones" style="display:none; max-width: 500px; margin: 15px auto; padding: 15px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; text-align: center;">
+                <h4 style="color: #003D75; margin-top: 0;">Seleccione operación de Bodega</h4>
+                <button onclick="mostrarFormIngreso()" style="background-color: #28a745; margin: 10px auto; max-width: 300px;">INGRESO BODEGA</button>
+                <button onclick="mostrarFormEgreso()" style="background-color: #ffc107; color: #333; margin: 10px auto; max-width: 300px;">EGRESO BODEGA</button>
+            </div>
+
+            <!-- Formulario 2A: INGRESO BODEGA -->
+            <div id="contenedorIngreso" style="display:none; max-width: 500px; margin: 15px auto; padding: 20px; background: #fff; border: 2px solid #28a745; border-radius: 8px; text-align: left; box-sizing: border-box;">
+                <h3 style="color: #28a745; margin-top: 0; text-align: center;">Ingreso Bodega</h3>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Descripción:</label>
+                    <input type="text" id="ing_descripcion" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cantidad:</label>
+                    <input type="number" id="ing_cantidad" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Ubicación: Rack/Nivel:</label>
+                    <input type="text" id="ing_ubicacion" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Comentario:</label>
+                    <textarea id="ing_comentario" rows="2" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Valor Guía Despacho:</label>
+                    <input type="text" id="ing_valor" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="text-align: center; display: flex; gap: 10px;">
+                    <button onclick="enviarIngreso()" style="background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Enviar</button>
+                    <button onclick="cerrarFormIngreso()" style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Formulario 2B: EGRESO BODEGA -->
+            <div id="contenedorEgreso" style="display:none; max-width: 500px; margin: 15px auto; padding: 20px; background: #fff; border: 2px solid #ffc107; border-radius: 8px; text-align: left; box-sizing: border-box;">
+                <h3 style="color: #b8860b; margin-top: 0; text-align: center;">Egreso Bodega</h3>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Descripción:</label>
+                    <input type="text" id="eg_descripcion" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cantidad:</label>
+                    <input type="number" id="eg_cantidad" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 15px; background: #fdfdfd; padding: 12px; border: 1px dashed #ccc; border-radius: 4px;">
+                    <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Ubicación: Rack/Nivel:</strong> <span id="eg_lbl_ubicacion" style="color: #555;">-</span></p>
+                    <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Comentario:</strong> <span id="eg_lbl_comentario" style="color: #555;">-</span></p>
+                    <p style="margin: 0; font-size: 14px;"><strong>Cantidad disponible:</strong> <span id="eg_lbl_disponible" style="color: #0070f3; font-weight: bold;">-</span></p>
+                </div>
+                
+                <div style="text-align: center; display: flex; gap: 10px;">
+                    <button onclick="enviarEgreso()" style="background-color: #0070f3; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Enviar</button>
+                    <button onclick="cerrarFormEgreso()" style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Cancelar</button>
+                </div>
+            </div>
 
             <!-- Botón 2 -->
             <button id="btnInventario">Archivo Maestro Inventario</button>
@@ -268,22 +334,71 @@
 
     <script src="script.js"></script>
 
-    <!-- Lógica de Carga Dinámica Plan Anual y Responsables Comerciales -->
+    <!-- Lógica de Carga Dinámica y Formularios de Bodega -->
     <script>
+        // --- Control de Menús de Bodega ---
+        function toggleMenuBodega() {
+            const menu = document.getElementById("menuBodegaOpciones");
+            const fIng = document.getElementById("contenedorIngreso");
+            const fEgr = document.getElementById("contenedorEgreso");
+            
+            // Cerrar formularios si están abiertos
+            fIng.style.display = "none";
+            fEgr.style.display = "none";
+
+            if (menu.style.display === "block") {
+                menu.style.display = "none";
+            } else {
+                menu.style.display = "block";
+                menu.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function mostrarFormIngreso() {
+            document.getElementById("menuBodegaOpciones").style.display = "none";
+            document.getElementById("contenedorEgreso").style.display = "none";
+            const fIng = document.getElementById("contenedorIngreso");
+            fIng.style.display = "block";
+            fIng.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cerrarFormIngreso() {
+            document.getElementById("contenedorIngreso").style.display = "none";
+        }
+
+        function mostrarFormEgreso() {
+            document.getElementById("menuBodegaOpciones").style.display = "none";
+            document.getElementById("contenedorIngreso").style.display = "none";
+            const fEgr = document.getElementById("contenedorEgreso");
+            fEgr.style.display = "block";
+            fEgr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cerrarFormEgreso() {
+            document.getElementById("contenedorEgreso").style.display = "none";
+        }
+
+        function enviarIngreso() {
+            alert("Acción de envío de Ingreso (Pendiente de integrar con base de datos/backend).");
+        }
+
+        function enviarEgreso() {
+            alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
+        }
+
+        // --- Lógica de Plan Anual ---
         const urlScriptAnual = "https://script.google.com/macros/s/AKfycbwZQv7ZFhkx7PuoRdh7Vq2AjUK-cVAK8QYyM2lnjXrwlqJMQFR_h2inn7KIlWHi6sOj3A/exec?action=get_anual";
 
         async function cargarPlanAnual() {
             const contenedor = document.getElementById("contenedorPlan");
             const iframe = document.getElementById("iframePlan");
 
-            // Si ya está abierto, lo cerramos
             if (contenedor.style.display === "block") {
                 contenedor.style.display = "none";
                 iframe.src = "";
                 return;
             }
 
-            // Limpiamos y mostramos el contenedor tipo visor
             iframe.src = "";
             contenedor.style.display = "block";
             contenedor.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -293,7 +408,6 @@
                 const resultado = await respuesta.json();
 
                 if (resultado.status === "success") {
-                    // Usamos el visor embebido con parámetro extra de compatibilidad
                     iframe.src = `https://drive.google.com/file/d/${resultado.id}/preview?usp=sharing`;
                 } else {
                     alert("No se pudo cargar el Plan Anual: " + resultado.message);
@@ -313,7 +427,7 @@
             iframe.src = "";
         }
 
-        // Lógica de Responsables Comerciales
+        // --- Lógica de Responsables Comerciales ---
         const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnIZ946fJMi0Z43hNigGSDMtY_j3J5P4wXe7YwtPKu_3JT1ObCnKMAhPzlCBJcRrrB_u4YKp2WMQI8/pub?output=csv";
         let datosClientes = [];
 
