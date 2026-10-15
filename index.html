@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASA Team Chile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #003D75;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .logo-contenedor {
+            display: block;
+            max-height: 120px;
+            margin: 15px auto;
+        }
+        main {
+            padding: 20px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            margin: 15px auto;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0051bb;
+        }
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+            padding-bottom: 20px;
+        }
+        .exclusivo-texto {
+            margin-top: 20px;
+            margin-bottom: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* --- ESTILOS RESPONSABLES COMERCIALES --- */
+        #contenedorResponsables {
+            position: relative;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 25px 20px 20px 20px;
+            background: #fff;
+            border: 2px solid #0070f3;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .close-box-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #000;
+            line-height: 1;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+        .close-box-btn:hover {
+            color: #dc3545;
+        }
+
+        .btn-container { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            justify-content: center;
+            margin: 20px auto 0 auto; 
+            max-width: 1000px;
+        }
+        
+        .btn-cliente {
+            padding: 10px 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 300px;
+            min-height: 60px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            margin: 0;
+        }
+        .btn-cliente:hover { background-color: #0056b3; }
+
+        /* Ventana emergente (Modal Clientes) */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000;
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.5); 
+            justify-content: center; align-items: center;
+        }
+        
+        .modal-content {
+            background: white; 
+            padding: 24px; 
+            border-radius: 8px; 
+            max-width: 400px; 
+            width: 90%;
+            position: relative;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            color: #007bff;
+            margin-top: 0;
+            padding-right: 25px;
+        }
+
+        .modal-content hr {
+            border: none;
+            border-top: 2px solid #007bff;
+            margin: 15px 0;
+        }
+
+        .close-btn {
+            position: absolute; 
+            top: 12px; 
+            right: 15px; 
+            font-size: 24px; 
+            font-weight: bold;
+            cursor: pointer; 
+            color: #555;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+        .close-btn:hover { color: #000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ASA Team Chile</h1>
+    </header>
+
+    <img src="LOGO ASA JPG.jpg" alt="Logo ASA" class="logo-contenedor">
+
+    <main>
+        <section id="seccion-login" style="max-width: 350px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
+            <h2 style="margin-bottom: 20px; color: #333; font-size: 20px;">Control de Acceso</h2>
+            
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label for="inputUsuario" style="display: block; margin-bottom: 5px; font-weight: bold;">Usuario:</label>
+                <input type="text" id="inputUsuario" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label for="inputClave" style="display: block; margin-bottom: 5px; font-weight: bold;">Contraseña:</label>
+                <input type="password" id="inputClave" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <button id="btnIngresar" style="width: 100%; padding: 10px; background-color: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin: 0;">Ingresar</button>
+            
+            <p id="mensajeError" style="color: #dc3545; margin-top: 15px; display: none; font-weight: bold;"></p>
+        </section>
+
+        <section id="contenido" style="display: none;">
+            
+            <div class="exclusivo-texto">---</div>
+            
+            <!-- Botón 1 -->
+            <a href="https://forms.gle/r4V3gwWJrKAiRNLx8" target="_blank" style="text-decoration: none;">
+                <button id="btnBodega">Ingreso / Egreso Bodega</button>
+            </a>
+
+            <!-- Botón 2 -->
+            <button id="btnInventario">Archivo Maestro Inventario</button>
+
+            <div id="contenedorPDF" style="display:none; margin-top: 20px; border: 2px solid #0070f3; border-radius: 8px; overflow: hidden;">
+                <iframe id="iframeInventario" src="" width="100%" height="700px" style="border: none;"></iframe>
+                <div style="text-align: center; padding: 10px; background-color: #f4f4f4;">
+                    <button onclick="cerrarVisor()" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; max-width: 200px; margin: 0 auto;">Cerrar Visor</button>
+                </div>
+            </div>
+
+            <!-- Botón 3: Responsables Comerciales -->
+            <button id="btnResponsables" onclick="toggleResponsables()">Responsables Comerciales</button>
+
+            <!-- Seccion Desplegable Directorio de Clientes -->
+            <div id="contenedorResponsables" style="display:none;">
+                <span class="close-box-btn" onclick="toggleResponsables()">&times;</span>
+                <h3 style="color: #003D75; margin-top: 0;">Directorio de Clientes</h3>
+                <p>Selecciona un cliente para ver el responsable comercial que lo atiende:</p>
+                <div id="contenedor-botones" class="btn-container">Cargando clientes...</div>
+            </div>
+
+            <!-- Botón 4: Plan Anual (Conectado a Google Drive con Visor Integrado) -->
+            <button id="btnReportes">Plan Anual</button>
+
+            <div id="contenedorPlan" style="display:none; margin-top: 20px; border: 2px solid #0070f3; border-radius: 8px; overflow: hidden;">
+                <iframe id="iframePlan" src="" width="100%" height="700px" style="border: none;"></iframe>
+                <div style="text-align: center; padding: 10px; background-color: #f4f4f4;">
+                    <button onclick="cerrarPlan()" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; max-width: 200px; margin: 0 auto;">Cerrar Visor</button>
+                </div>
+            </div>
+
+            <!-- Botón 5 -->
+            <button id="btnConfig">Catalogos/Manuales</button>
+             
+        </section>
+    </main>
+
+    <!-- Modal Inventario Existente -->
+    <div id="modalInventario" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; max-width: 450px; width: 90%;">
+            <h3 style="margin-top: 0; color: #003D75; font-size: 20px; margin-bottom: 25px;">¿Qué versión deseas revisar?</h3>
+            
+            <button id="btnOptEditable" style="margin: 15px auto; width: 100%;">Versión Editable (Vista Previa)</button>
+            <button id="btnOptPDF" style="margin: 15px auto; width: 100%;">Versión PDF (Solo Lectura)</button>
+            
+            <a href="#" id="btnCancelarModal" style="display: block; margin-top: 20px; color: #dc3545; font-weight: bold; text-decoration: none; font-size: 14px;">Cancelar</a>
+        </div>
+    </div>
+
+    <!-- Modal Clientes (Emergente Responsables Comerciales) -->
+    <div id="modal-cliente" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h3 id="modal-titulo">Cliente</h3>
+            <hr>
+            <p><strong>JEFE DE CUENTAS:</strong> <span id="modal-jefe"></span></p>
+            <p><strong>FANUC:</strong> <span id="modal-email"></span></p>
+            <p><strong>EQUIPO ASA:</strong> <span id="modal-contacto"></span></p>
+            <p><strong>TIPO DE INDUSTRIA:</strong> <span id="modal-industria"></span></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; EyV Solutions - 2026 | Developed exclusively for ASA AUTOMATION SpA</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+    <!-- Lógica de Carga Dinámica Plan Anual y Responsables Comerciales -->
+    <script>
+        const urlScriptAnual = "https://script.google.com/macros/s/AKfycbwZQv7ZFhkx7PuoRdh7Vq2AjUK-cVAK8QYyM2lnjXrwlqJMQFR_h2inn7KIlWHi6sOj3A/exec?action=get_anual";
+
+        async function cargarPlanAnual() {
+            const contenedor = document.getElementById("contenedorPlan");
+            const iframe = document.getElementById("iframePlan");
+
+            // Si ya está abierto, lo cerramos
+            if (contenedor.style.display === "block") {
+                contenedor.style.display = "none";
+                iframe.src = "";
+                return;
+            }
+
+            // Limpiamos y mostramos el contenedor tipo visor
+            iframe.src = "";
+            contenedor.style.display = "block";
+            contenedor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            try {
+                const respuesta = await fetch(urlScriptAnual);
+                const resultado = await respuesta.json();
+
+                if (resultado.status === "success") {
+                    // Usamos el visor embebido con parámetro extra de compatibilidad
+                    iframe.src = `https://drive.google.com/file/d/${resultado.id}/preview?usp=sharing`;
+                } else {
+                    alert("No se pudo cargar el Plan Anual: " + resultado.message);
+                    contenedor.style.display = "none";
+                }
+            } catch (error) {
+                console.error("Error al obtener el PDF anual:", error);
+                alert("Error de conexión al buscar el archivo ANUAL.PDF.");
+                contenedor.style.display = "none";
+            }
+        }
+
+        function cerrarPlan() {
+            const contenedor = document.getElementById("contenedorPlan");
+            const iframe = document.getElementById("iframePlan");
+            contenedor.style.display = "none";
+            iframe.src = "";
+        }
+
+        // Lógica de Responsables Comerciales
+        const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnIZ946fJMi0Z43hNigGSDMtY_j3J5P4wXe7YwtPKu_3JT1ObCnKMAhPzlCBJcRrrB_u4YKp2WMQI8/pub?output=csv";
+        let datosClientes = [];
+
+        async function cargarDatos() {
+            try {
+                const respuesta = await fetch(urlCSV);
+                const texto = await respuesta.text();
+                
+                const filas = texto.split("\n").map(row => row.split(","));
+                const encabezados = filas[0].map(h => h.trim());
+                
+                datosClientes = filas.slice(1).map(fila => {
+                    let cliente = {};
+                    encabezados.forEach((encabezado, index) => {
+                        cliente[encabezado] = fila[index] ? fila[index].trim() : "";
+                    });
+                    return cliente;
+                }).filter(c => c["CLIENTE"]);
+
+                generarBotones();
+            } catch (error) {
+                const contenedor = document.getElementById("contenedor-botones");
+                if (contenedor) {
+                    contenedor.innerHTML = "Error al cargar los datos.";
+                }
+                console.error("Error:", error);
+            }
+        }
+
+        function generarBotones() {
+            const contenedor = document.getElementById("contenedor-botones");
+            if (!contenedor) return;
+
+            contenedor.innerHTML = "";
+
+            datosClientes.forEach((item, index) => {
+                const btn = document.createElement("button");
+                btn.className = "btn-cliente";
+                btn.innerText = item["CLIENTE"];
+                btn.onclick = () => abrirModal(index);
+                contenedor.appendChild(btn);
+            });
+        }
+
+        function abrirModal(index) {
+            const cliente = datosClientes[index];
+            
+            document.getElementById("modal-titulo").innerText = cliente["CLIENTE"] || "Sin datos";
+            document.getElementById("modal-jefe").innerText = cliente["JEFE DE CUENTAS"] || "-";
+            document.getElementById("modal-email").innerText = cliente["FANUC"] || "-";
+            document.getElementById("modal-contacto").innerText = cliente["EQUIPO ASA"] || "-";
+            document.getElementById("modal-industria").innerText = cliente["TIPO DE INDUSTRIA"] || "-";
+            
+            document.getElementById("modal-cliente").style.display = "flex";
+        }
+
+        function cerrarModal() {
+            document.getElementById("modal-cliente").style.display = "none";
+        }
+
+        function toggleResponsables() {
+            const cont = document.getElementById("contenedorResponsables");
+            if (cont.style.display === "none" || cont.style.display === "") {
+                cont.style.display = "block";
+                if (datosClientes.length === 0) {
+                    cargarDatos();
+                }
+                setTimeout(() => {
+                    cont.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                cont.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

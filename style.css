@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    text-align: center;
+}
+
+header {
+    background: #003D75;
+    color: #fff;
+    padding: 1rem;
+}
+
+button {
+    display: block;          /* Hace que cada botón ocupe su propia línea */
+    width: 390px;            /* Ancho fijo para que todos midan exactamente lo mismo */
+    padding: 20px;           /* Espacio interno para que sean altos */
+    margin: 30px auto;       /* 30px de separación arriba/abajo y centrado automático */
+    
+    font-size: 18px;         /* Texto grande y legible */
+    font-weight: bold;
+    color: white;
+    background-color: #0070f3;
+    border: none;
+    border-radius: 10px;     /* Bordes redondeados más elegantes */
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #0051a2; /* Color más oscuro al pasar el mouse */
+}
+
+    transform: scale(1.15);  /* El botón crece un poquito al tocarlo */
+}
+footer p {
+    font-size: 0.85rem; /* Tamaño de letra un poco más pequeño */
+    margin: 5px 0;      /* Espacio pequeño entre las dos líneas */
+    color: #666;        /* Un color gris suave para que no distraiga */
+}
+{
+    text-decoration: none; /* Esto elimina la línea de abajo */
+}
+
+a:hover {
+    text-decoration: none; /* Asegura que no aparezca ni al pasar el mouse */
+}
