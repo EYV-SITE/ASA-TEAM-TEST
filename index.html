@@ -521,4 +521,17 @@
         function toggleResponsables() {
             const cont = document.getElementById("contenedorResponsables");
             if (cont.style.display === "none" || cont.style.display === "") {
-                cont.style.display = "
+                cont.style.display = "block";
+                if (datosClientes.length === 0) {
+                    cargarDatos();
+                }
+                setTimeout(() => {
+                    cont.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                cont.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
