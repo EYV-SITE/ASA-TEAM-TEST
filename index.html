@@ -201,8 +201,8 @@
             <!-- Menú Desplegable con opciones de Bodega -->
             <div id="menuBodegaOpciones" style="display:none; max-width: 500px; margin: 15px auto; padding: 15px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; text-align: center;">
                 <h4 style="color: #003D75; margin-top: 0;">Seleccione operación de Bodega</h4>
-                <button onclick="mostrarFormIngreso()" style="background-color: #0070f3; color: black; font-weight: bold; margin: 10px auto; max-width: 300px;">INGRESO BODEGA</button>
-                <button onclick="mostrarFormEgreso()" style="background-color: #0070f3; color: black; font-weight: bold; margin: 10px auto; max-width: 300px;">EGRESO BODEGA</button>
+                <button onclick="mostrarFormIngreso()" style="background-color: #0070f3; color: white; font-size: 18px; font-weight: normal; margin: 10px auto; max-width: 300px;">INGRESO BODEGA</button>
+                <button onclick="mostrarFormEgreso()" style="background-color: #0070f3; color: white; font-size: 18px; font-weight: normal; margin: 10px auto; max-width: 300px;">EGRESO BODEGA</button>
             </div>
 
             <!-- Formulario 2A: INGRESO BODEGA -->
@@ -264,13 +264,26 @@
                 </div>
                 
                 <div style="margin-bottom: 15px; background: #fdfdfd; padding: 12px; border: 1px dashed #ccc; border-radius: 4px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 6px;">
-                        <p style="margin: 0; font-size: 14px; flex: 1;"><strong>Rack:</strong> <span id="eg_lbl_rack" style="color: #555;">-</span></p>
-                        <p style="margin: 0; font-size: 14px; flex: 1;"><strong>Nivel:</strong> <span id="eg_lbl_nivel" style="color: #555;">-</span></p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Rack</p>
+                            <span id="eg_lbl_rack" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333;">-</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Nivel</p>
+                            <span id="eg_lbl_nivel" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333;">-</span>
+                        </div>
                     </div>
-                    <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Comentario:</strong> <span id="eg_lbl_comentario" style="color: #555;">-</span></p>
-                    <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Cantidad disponible:</strong> <span id="eg_lbl_disponible" style="color: #0070f3; font-weight: bold;">-</span></p>
-                    <p style="margin: 0; font-size: 13px; color: #555;"><strong>Última modificación:</strong> <span id="eg_lbl_modificacion" style="color: #555;">-</span></p>
+                    <div style="margin-bottom: 10px;">
+                        <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Comentario</p>
+                        <span id="eg_lbl_comentario" style="display: block; padding: 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333; min-height: 20px;">-</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #000;">Cantidad disponible: <span id="eg_lbl_disponible" style="color: #0070f3; font-weight: bold;">-</span></p>
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #000;">Última modificación: <span id="eg_lbl_modificacion" style="color: #333; font-weight: normal;">-</span></p>
+                    </div>
                 </div>
                 
                 <div style="text-align: center; display: flex; gap: 10px;">
