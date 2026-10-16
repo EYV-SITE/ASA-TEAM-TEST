@@ -278,11 +278,15 @@
                         <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Comentario</p>
                         <span id="eg_lbl_comentario" style="display: block; padding: 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333; min-height: 20px;">-</span>
                     </div>
-                    <div style="margin-bottom: 8px;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #000;">Cantidad disponible: <span id="eg_lbl_disponible" style="color: #0070f3; font-weight: bold;">-</span></p>
-                    </div>
-                    <div>
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #000;">Última modificación: <span id="eg_lbl_modificacion" style="color: #333; font-weight: normal;">-</span></p>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Cantidad disponible</p>
+                            <span id="eg_lbl_disponible" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #0070f3; font-weight: bold;">-</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Última modificación</p>
+                            <span id="eg_lbl_modificacion" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333; font-weight: bold;">-</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -517,17 +521,4 @@
         function toggleResponsables() {
             const cont = document.getElementById("contenedorResponsables");
             if (cont.style.display === "none" || cont.style.display === "") {
-                cont.style.display = "block";
-                if (datosClientes.length === 0) {
-                    cargarDatos();
-                }
-                setTimeout(() => {
-                    cont.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            } else {
-                cont.style.display = "none";
-            }
-        }
-    </script>
-</body>
-</html>
+                cont.style.display = "
