@@ -61,6 +61,38 @@
             color: #333;
         }
 
+        /* --- ESTILOS SUCURSALES / PRODUCTO AUTOCOMPLETE --- */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #fff;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+            text-align: left;
+            font-size: 14px;
+        }
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
         /* --- ESTILOS RESPONSABLES COMERCIALES --- */
         #contenedorResponsables {
             position: relative;
@@ -211,7 +243,10 @@
                 
                 <div style="margin-bottom: 12px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 4px;">Producto:</label>
-                    <input type="text" id="ing_Producto" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                    <div class="autocomplete-container">
+                        <input type="text" id="ing_Producto" autocomplete="off" placeholder="Escriba al menos 4 letras..." style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                        <div id="listaAutocompletado" class="autocomplete-items"></div>
+                    </div>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
@@ -396,6 +431,7 @@
             const fIng = document.getElementById("contenedorIngreso");
             fIng.style.display = "block";
             fIng.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            cargarProductosInventario(); // Cargar lista al abrir ingreso
         }
 
         function cerrarFormIngreso() {
@@ -420,6 +456,87 @@
 
         function enviarEgreso() {
             alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
+        }
+
+        // --- Lógica de Autocompletado de Productos (Ingreso Bodega) ---
+        const urlCSVInventario = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=689203295";
+        let listaProductosInventario = [];
+
+        async function cargarProductosInventario() {
+            if (listaProductosInventario.length > 0) return;
+            try {
+                const respuesta = await fetch(urlCSVInventario);
+                const texto = await respuesta.text();
+                const lineas = texto.split("\n");
+                
+                // Encontrar los nombres de productos (Columna E / índice 5 o dinámico por cabecera)
+                let productosSet = new Set();
+                lineas.forEach((linea, idx) => {
+                    const columnas = linea.split(",");
+                    // Buscamos columnas de nombre de producto basadas en el formato conocido
+                    // Las columnas de nombre están en índices específicos (ej: Nombre MECANICO, ELECTRICO, etc.)
+                    // Recorremos buscando valores significativos en las columnas de nombre
+                    if (idx > 1) {
+                        columnas.forEach((col, i) => {
+                            // Columnas de nombre típicas en el maestro (ej: índices 1, 5, 9, 13, 17, 21)
+                            if ((i - 1) % 4 === 0 && col && col.trim() !== "" && col.trim() !== "NOMBRE") {
+                                let prod = col.trim().replace(/^["']|["']$/g, '');
+                                if (prod) productosSet.add(prod);
+                            }
+                        });
+                    }
+                });
+                listaProductosInventario = Array.from(productosSet);
+            } catch (e) {
+                console.error("Error cargando productos para autocompletar:", e);
+            }
+        }
+
+        const inputProductoIng = document.getElementById('ing_Producto');
+        const listaSugerencias = document.getElementById('listaAutocompletado');
+        const inputComentarioIng = document.getElementById('ing_comentario');
+
+        if (inputProductoIng) {
+            inputProductoIng.addEventListener('input', function() {
+                const valor = this.value.trim();
+                listaSugerencias.innerHTML = "";
+                
+                if (valor.length < 3) {
+                    return;
+                }
+
+                const valorLower = valor.toLowerCase();
+                const coincidencias = listaProductosInventario.filter(prod => prod.toLowerCase().includes(valorLower));
+
+                // Agregar coincidencias encontradas
+                coincidencias.forEach(prod => {
+                    const itemDiv = document.createElement("div");
+                    itemDiv.innerHTML = prod;
+                    itemDiv.addEventListener("click", function() {
+                        inputProductoIng.value = prod;
+                        listaSugerencias.innerHTML = "";
+                    });
+                    listaSugerencias.appendChild(itemDiv);
+                });
+
+                // Agregar obligatoriamente la opción 'OTRO'
+                const otroDiv = document.createElement("div");
+                otroDiv.innerHTML = "<strong>OTRO</strong>";
+                otroDiv.style.color = "#0070f3";
+                otroDiv.addEventListener("click", function() {
+                    inputProductoIng.value = "OTRO";
+                    inputComentarioIng.value = "Ingresa aquí el nombre del producto para su creación";
+                    listaSugerencias.innerHTML = "";
+                });
+                listaSugerencias.appendChild(otroDiv);
+            });
+
+            // Ocultar sugerencias al hacer clic fuera
+            document.addEventListener("click", function (e) {
+                if (e.target !== inputProductoIng) {
+                    listaSugerencias.innerHTML = "";
+                }
+            });
         }
 
         // --- Lógica de Plan Anual ---
