@@ -244,7 +244,7 @@
                 <div style="margin-bottom: 12px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 4px;">Producto:</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="ing_Producto" autocomplete="off" placeholder="Escriba al menos 3 letras......" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" id="ing_Producto" autocomplete="off" placeholder="Escriba al menos 3 letras..." style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
                         <div id="listaAutocompletado" class="autocomplete-items"></div>
                     </div>
                 </div>
@@ -458,37 +458,53 @@
             alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
         }
 
-        // --- Lógica de Autocompletado de Productos (Ingreso Bodega) ---
-        const urlCSVInventario = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=689203295";
+        // --- Lógica de Autocompletado de Productos (Hoja PRODUCTOS - Columna E) ---
+        const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
         let listaProductosInventario = [];
+
+        // Función auxiliar para separar correctamente líneas CSV respetando comillas
+        function parsearLineaCSV(linea) {
+            const resultado = [];
+            let inicio = 0;
+            let enComillas = false;
+            for (let i = 0; i < linea.length; i++) {
+                if (linea[i] === '"') {
+                    enComillas = !enComillas;
+                } else if (linea[i] === ',' && !enComillas) {
+                    let campo = linea.substring(inicio, i).trim();
+                    campo = campo.replace(/^"|"$/g, '').trim();
+                    resultado.push(campo);
+                    inicio = i + 1;
+                }
+            }
+            let ultimoCampo = linea.substring(inicio).trim().replace(/^"|"$/g, '').trim();
+            resultado.push(ultimoCampo);
+            return resultado;
+        }
 
         async function cargarProductosInventario() {
             if (listaProductosInventario.length > 0) return;
             try {
-                const respuesta = await fetch(urlCSVInventario);
+                const respuesta = await fetch(urlCSVProductos);
                 const texto = await respuesta.text();
                 const lineas = texto.split("\n");
                 
-                // Encontrar los nombres de productos (Columna E / índice 5 o dinámico por cabecera)
                 let productosSet = new Set();
                 lineas.forEach((linea, idx) => {
-                    const columnas = linea.split(",");
-                    // Buscamos columnas de nombre de producto basadas en el formato conocido
-                    // Las columnas de nombre están en índices específicos (ej: Nombre MECANICO, ELECTRICO, etc.)
-                    // Recorremos buscando valores significativos en las columnas de nombre
-                    if (idx > 1) {
-                        columnas.forEach((col, i) => {
-                            // Columnas de nombre típicas en el maestro (ej: índices 1, 5, 9, 13, 17, 21)
-                            if ((i - 1) % 4 === 0 && col && col.trim() !== "" && col.trim() !== "NOMBRE") {
-                                let prod = col.trim().replace(/^["']|["']$/g, '');
-                                if (prod) productosSet.add(prod);
+                    if (idx > 0 && linea.trim() !== "") { // Omitir encabezado
+                        const columnas = parsearLineaCSV(linea);
+                        // Columna E corresponde al índice 4
+                        if (columnas.length > 4 && columnas[4]) {
+                            let prod = columnas[4].trim();
+                            if (prod !== "" && prod.toUpperCase() !== "NOMBRE PRODUCTO") {
+                                productosSet.add(prod);
                             }
-                        });
+                        }
                     }
                 });
                 listaProductosInventario = Array.from(productosSet);
             } catch (e) {
-                console.error("Error cargando productos para autocompletar:", e);
+                console.error("Error cargando productos de la hoja PRODUCTOS:", e);
             }
         }
 
@@ -519,7 +535,7 @@
                     listaSugerencias.appendChild(itemDiv);
                 });
 
-                // Agregar obligatoriamente la opción 'OTRO'
+                // Agregar obligatoriamente la opción 'OTRO' al final
                 const otroDiv = document.createElement("div");
                 otroDiv.innerHTML = "<strong>OTRO</strong>";
                 otroDiv.style.color = "#0070f3";
