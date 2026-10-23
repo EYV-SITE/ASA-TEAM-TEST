@@ -4,6 +4,7 @@
 // =========================================================================
 
 // --- 1. CONFIGURACIÓN DEL SISTEMA DE LOGIN ---
+// URL que maneja la base de datos de usuarios y claves (NO MODIFICAR)
 const URL_API_LOGIN = "https://script.google.com/macros/s/AKfycbzifh_OFapV6c7LAbHuN8_nhgXp04eg6PmnTzTeyQ3hfZ4d8sYhghDd69-R1DkDcnac/exec"; 
 
 const seccionLogin = document.getElementById('seccion-login');
@@ -76,11 +77,16 @@ const btnCancelarModal = document.getElementById('btnCancelarModal');
 const visor = document.getElementById('contenedorPDF');
 const iframeInventario = document.getElementById('iframeInventario');
 
+// Enlace dinámico para la versión editable
 const urlEditable = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/edit?rm=minimal&gid=689203295";
+
+// URL de la API del PDF Inventario para buscar el archivo por nombre
 const URL_API_PDF = "https://script.google.com/macros/s/AKfycbwY5qzIVzXSzfa0-MXuJquOdU8LR8Z4EGT55ltRXx6-QxhiizzJ9nco09o41lhH3DI/exec";
 
+// Variable global donde almacenaremos el ID dinámico obtenido desde Drive
 let pdfIdDinamico = "";
 
+// Función para ir a buscar el ID del archivo "PLAN.pdf" por su nombre a tu carpeta de Drive
 function cargarIdPdfDinamico() {
     const urlConsulta = URL_API_PDF + "?action=get_pdf";
     
@@ -99,6 +105,7 @@ function cargarIdPdfDinamico() {
         });
 }
 
+// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfDinamico();
 
 if (botonInventario) {
@@ -116,13 +123,15 @@ if (btnOptEditable) {
 
 if (btnOptPDF) {
     btnOptPDF.addEventListener('click', function() {
+        // En caso de que la conexión sea lenta y la API del PDF no haya devuelto el ID aún
         if (!pdfIdDinamico) {
             alert("El sistema aún está localizando el archivo PLAN.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfDinamico();
+            cargarIdPdfDinamico(); // Volvemos a intentar la consulta
             return;
         }
 
         if (iframeInventario) {
+            // Reconstrucción dinámica del visor apuntando al ID obtenido por nombre
             iframeInventario.src = "https://drive.google.com/file/d/" + pdfIdDinamico + "/preview?v=" + new Date().getTime();
             iframeInventario.style.width = "100%";
             iframeInventario.style.height = "600px"; 
@@ -152,15 +161,18 @@ function cerrarVisor() {
 }
 
 
-// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL ---
+// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL (ACTUALIZADA) ---
 const btnPlan = document.getElementById('btnReportes');
 const visorPlan = document.getElementById('contenedorPlan');
 const iframePlan = document.getElementById('iframePlan');
 
+// URL de la API del PDF Plan Anual recién creada
 const URL_API_ANUAL_PDF = "https://script.google.com/macros/s/AKfycbzfbN73_IyRlxDRtALXREKWM9UTYMhTFERvGx-6OVewPkVYyeKjCfkywwP8BhYtVaQ/exec";
 
+// Variable global para almacenar el ID dinámico del ANUAL.pdf
 let pdfAnualIdDinamico = "";
 
+// Función para ir a buscar el ID del archivo "ANUAL.pdf" por su nombre a la carpeta de Drive
 function cargarIdPdfAnualDinamico() {
     const urlConsulta = URL_API_ANUAL_PDF + "?action=get_pdf";
     
@@ -179,13 +191,15 @@ function cargarIdPdfAnualDinamico() {
         });
 }
 
+// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfAnualDinamico();
 
 if (btnPlan) {
     btnPlan.addEventListener('click', function() {
+        // Si la conexión es lenta y la API aún no devuelve el ID
         if (!pdfAnualIdDinamico) {
             alert("El sistema aún está localizando el archivo ANUAL.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfAnualDinamico();
+            cargarIdPdfAnualDinamico(); // Reintentamos la consulta
             return;
         }
 
@@ -219,7 +233,7 @@ function cerrarPlan() {
 
 
 // --- 4. LÓGICA DE FORMULARIOS BODEGA (INGRESO / AUTOCOMPLETADO / ENVÍO) ---
-const urlWebApp = "https://script.google.com/macros/s/AKfycbyVvu2oDmIreob8h7uj3GeZimT8mmMi0bftP52cvn7J6JNKhOYgYuk3HhAUs3RpiWNX/exec";
+const urlWebApp = "https://script.google.com/macros/s/AKfycbwZtyPyWHXhNPcYclX7kpozPzQcNj8-mvtjG97HZn5rBOdWZ7l9EbMZf2JASIUUsXeikw/exec";
 
 function toggleMenuBodega() {
     const menu = document.getElementById("menuBodegaOpciones");
