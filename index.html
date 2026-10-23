@@ -274,8 +274,28 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Valor Guía Despacho:</label>
-                    <input type="text" id="ing_valor" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                    <div style="display: flex; gap: 10px;">
+                        <!-- Columna Izquierda: Valor Guía Despacho -->
+                        <div style="flex: 1.4;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Valor Guía Despacho:</label>
+                            <input type="text" id="ing_valor" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; height: 38px;">
+                        </div>
+                        <!-- Columna Derecha: Moneda (CLP, EUR, USD) -->
+                        <div style="flex: 1;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 4px; text-align: center;">Moneda</label>
+                            <div style="display: flex; justify-content: space-around; align-items: center; padding: 0 8px; background: #fff; border: 1px solid #ccc; border-radius: 4px; height: 38px; box-sizing: border-box;">
+                                <label style="font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                    <input type="radio" name="ing_moneda" value="CLP" checked style="margin: 0;"> CLP
+                                </label>
+                                <label style="font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                    <input type="radio" name="ing_moneda" value="EUR" style="margin: 0;"> EUR
+                                </label>
+                                <label style="font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                    <input type="radio" name="ing_moneda" value="USD" style="margin: 0;"> USD
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="text-align: center; display: flex; gap: 10px;">
@@ -451,7 +471,8 @@
         }
 
         function enviarIngreso() {
-            alert("Acción de envío de Ingreso (Pendiente de integrar con base de datos/backend).");
+            const monedaSeleccionada = document.querySelector('input[name="ing_moneda"]:checked').value;
+            alert("Acción de envío de Ingreso con Moneda: " + monedaSeleccionada + " (Pendiente de integrar con base de datos/backend).");
         }
 
         function enviarEgreso() {
