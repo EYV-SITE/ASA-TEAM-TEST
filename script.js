@@ -292,7 +292,7 @@ function cerrarFormEgreso() {
     if (fEgr) fEgr.style.display = "none";
 }
 
-// Envío de datos a la hoja INGRESO DE DATOS (Columnas A a K)
+// Envío de datos a la hoja INGRESO DATOS (Columnas A a K)
 async function enviarIngreso() {
     const productoNombre = document.getElementById("ing_Producto").value.trim();
     const cantidad = document.getElementById("ing_cantidad").value.trim();
@@ -345,7 +345,7 @@ async function enviarIngreso() {
             body: JSON.stringify(datosEnvio)
         });
 
-        alert("¡Ingreso registrado correctamente en la hoja 'INGRESO DE DATOS'!");
+        alert("¡Ingreso registrado correctamente en la hoja 'INGRESO DATOS'!");
         cerrarFormIngreso();
         
         document.getElementById("ing_Producto").value = "";
@@ -409,10 +409,18 @@ async function cargarProductosInventario() {
         lineas.forEach((linea, idx) => {
             if (idx > 0 && linea.trim() !== "") {
                 const columnas = parsearLineaCSV(linea);
-                if (columnas.length > 4 && columnas[4]) {
-                    let codigo = columnas[3] ? columnas[3].trim() : "";
-                    let prod = columnas[4].trim();
-                    if (prod !== "" && prod.toUpperCase() !== "NOMBRE PRODUCTO") {
+                if (columnas.length >= 4) {
+                    let codigo = columnas[3] ? columnas[3].trim() : (columnas[4] ? columnas[4].trim() : "");
+                    let prod = "";
+                    
+                    for (let i = 3; i < columnas.length; i++) {
+                        let val = columnas[i] ? columnas[i].trim() : "";
+                        if (val !== "" && isNaN(val) && !val.toUpperCase().includes("CODIGO")) {
+                            prod = val;
+                        }
+                    }
+                    
+                    if (prod && prod.toUpperCase() !== "NOMBRE PRODUCTO" && prod.toUpperCase() !== "CODIGO") {
                         productosSet.add(prod);
                         mapaProductosCodigos.set(prod.toLowerCase(), codigo);
                     }
@@ -420,6 +428,7 @@ async function cargarProductosInventario() {
             }
         });
         listaProductosInventario = Array.from(productosSet);
+        console.log("Productos cargados para autocompletado:", listaProductosInventario.length);
     } catch (e) {
         console.error("Error cargando productos de la hoja PRODUCTOS:", e);
     }
