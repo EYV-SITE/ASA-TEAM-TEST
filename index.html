@@ -427,6 +427,9 @@
 
     <!-- Lógica de Carga Dinámica y Formularios de Bodega -->
     <script>
+        // URL de tu Apps Script Web App (Reemplaza con tu URL de implementación final)
+        const urlWebApp = "https://script.google.com/macros/s/AKfycbwZQv7ZFhkx7PuoRdh7Vq2AjUK-cVAK8QYyM2lnjXrwlqJMQFR_h2inn7KIlWHi6sOj3A/exec";
+
         // --- Control de Menús de Bodega ---
         function toggleMenuBodega() {
             const menu = document.getElementById("menuBodegaOpciones");
@@ -470,18 +473,88 @@
             document.getElementById("contenedorEgreso").style.display = "none";
         }
 
-        function enviarIngreso() {
-            const monedaSeleccionada = document.querySelector('input[name="ing_moneda"]:checked').value;
-            alert("Acción de envío de Ingreso con Moneda: " + monedaSeleccionada + " (Pendiente de integrar con base de datos/backend).");
+        // --- Función Enviar Ingreso hacia Google Sheets ---
+        async function enviarIngreso() {
+            const productoNombre = document.getElementById("ing_Producto").value.trim();
+            const cantidad = document.getElementById("ing_cantidad").value.trim();
+            const rack = document.getElementById("ing_rack").value.trim();
+            const nivel = document.getElementById("ing_nivel").value.trim();
+            const comentario = document.getElementById("ing_comentario").value.trim();
+            const valorGuia = document.getElementById("ing_valor").value.trim();
+            const monedaEl = document.querySelector('input[name="ing_moneda"]:checked');
+            const moneda = monedaEl ? monedaEl.value : "CLP";
+            const usuario = document.getElementById("inputUsuario") ? document.getElementById("inputUsuario").value.trim() : "Sistema";
+
+            if (!productoNombre || !cantidad) {
+                alert("Por favor completa al menos el Producto y la Cantidad.");
+                return;
+            }
+
+            // Buscar código de producto en la lista cargada (Columna D de la hoja PRODUCTOS)
+            let codigoProducto = "";
+            const itemEncontrado = mapaProductosCodigos.get(productoNombre.toLowerCase());
+            if (itemEncontrado) {
+                codigoProducto = itemEncontrado;
+            }
+
+            // Datos estructurados exactamente para las Columnas A hasta K
+            const datosEnvio = {
+                tipoOperacion: "INGRESO",
+                usuario: usuario,
+                codigoProducto: codigoProducto,
+                producto: productoNombre,
+                cantidad: cantidad,
+                rack: rack,
+                nivel: nivel,
+                comentario: comentario,
+                valorGuia: valorGuia,
+                moneda: moneda
+            };
+
+            try {
+                const botonEnviar = event.target;
+                botonEnviar.disabled = true;
+                botonEnviar.innerText = "Enviando...";
+
+                const respuesta = await fetch(urlWebApp, {
+                    method: "POST",
+                    mode: "no-cors", // Requerido para llamadas externas a Apps Script sin problemas de CORS
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(datosEnvio)
+                });
+
+                alert("¡Ingreso registrado correctamente en la hoja 'INGRESO DE DATOS'!");
+                cerrarFormIngreso();
+                
+                // Limpiar campos
+                document.getElementById("ing_Producto").value = "";
+                document.getElementById("ing_cantidad").value = "";
+                document.getElementById("ing_rack").value = "";
+                document.getElementById("ing_nivel").value = "";
+                document.getElementById("ing_comentario").value = "";
+                document.getElementById("ing_valor").value = "";
+
+                botonEnviar.disabled = false;
+                botonEnviar.innerText = "Enviar";
+            } catch (error) {
+                console.error("Error al enviar los datos:", error);
+                alert("Hubo un error al registrar el ingreso. Inténtalo nuevamente.");
+                const botonEnviar = event.target;
+                botonEnviar.disabled = false;
+                botonEnviar.innerText = "Enviar";
+            }
         }
 
         function enviarEgreso() {
             alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
         }
 
-        // --- Lógica de Autocompletado de Productos (Hoja PRODUCTOS - Columna E) ---
+        // --- Lógica de Autocompletado y Mapeo de Códigos de Productos ---
         const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
         let listaProductosInventario = [];
+        let mapaProductosCodigos = new Map(); // Relaciona Nombre de Producto (Col E) con Código (Col D)
 
         // Función auxiliar para separar correctamente líneas CSV respetando comillas
         function parsearLineaCSV(linea) {
@@ -514,11 +587,13 @@
                 lineas.forEach((linea, idx) => {
                     if (idx > 0 && linea.trim() !== "") { // Omitir encabezado
                         const columnas = parsearLineaCSV(linea);
-                        // Columna E corresponde al índice 4
+                        // Columna D es índice 3 (Código), Columna E es índice 4 (Nombre Producto)
                         if (columnas.length > 4 && columnas[4]) {
+                            let codigo = columnas[3] ? columnas[3].trim() : "";
                             let prod = columnas[4].trim();
                             if (prod !== "" && prod.toUpperCase() !== "NOMBRE PRODUCTO") {
                                 productosSet.add(prod);
+                                mapaProductosCodigos.set(prod.toLowerCase(), codigo);
                             }
                         }
                     }
