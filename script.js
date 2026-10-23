@@ -4,7 +4,6 @@
 // =========================================================================
 
 // --- 1. CONFIGURACIÓN DEL SISTEMA DE LOGIN ---
-// URL que maneja la base de datos de usuarios y claves (NO MODIFICAR)
 const URL_API_LOGIN = "https://script.google.com/macros/s/AKfycbzifh_OFapV6c7LAbHuN8_nhgXp04eg6PmnTzTeyQ3hfZ4d8sYhghDd69-R1DkDcnac/exec"; 
 
 const seccionLogin = document.getElementById('seccion-login');
@@ -24,7 +23,7 @@ if (btnIngresar) {
         
         btnIngresar.innerText = "Verificando...";
         btnIngresar.disabled = true;
-        mensajeError.style.display = "none";
+        if (mensajeError) mensajeError.style.display = "none";
 
         // Consulta al Google Sheet de USUARIOS en segundo plano
         fetch(URL_API_LOGIN)
@@ -77,16 +76,11 @@ const btnCancelarModal = document.getElementById('btnCancelarModal');
 const visor = document.getElementById('contenedorPDF');
 const iframeInventario = document.getElementById('iframeInventario');
 
-// Enlace dinámico para la versión editable
 const urlEditable = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/edit?rm=minimal&gid=689203295";
-
-// URL de la API del PDF Inventario para buscar el archivo por nombre
 const URL_API_PDF = "https://script.google.com/macros/s/AKfycbwY5qzIVzXSzfa0-MXuJquOdU8LR8Z4EGT55ltRXx6-QxhiizzJ9nco09o41lhH3DI/exec";
 
-// Variable global donde almacenaremos el ID dinámico obtenido desde Drive
 let pdfIdDinamico = "";
 
-// Función para ir a buscar el ID del archivo "PLAN.pdf" por su nombre a tu carpeta de Drive
 function cargarIdPdfDinamico() {
     const urlConsulta = URL_API_PDF + "?action=get_pdf";
     
@@ -105,7 +99,6 @@ function cargarIdPdfDinamico() {
         });
 }
 
-// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfDinamico();
 
 if (botonInventario) {
@@ -123,15 +116,13 @@ if (btnOptEditable) {
 
 if (btnOptPDF) {
     btnOptPDF.addEventListener('click', function() {
-        // En caso de que la conexión sea lenta y la API del PDF no haya devuelto el ID aún
         if (!pdfIdDinamico) {
             alert("El sistema aún está localizando el archivo PLAN.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfDinamico(); // Volvemos a intentar la consulta
+            cargarIdPdfDinamico();
             return;
         }
 
         if (iframeInventario) {
-            // Reconstrucción dinámica del visor apuntando al ID obtenido por nombre
             iframeInventario.src = "https://drive.google.com/file/d/" + pdfIdDinamico + "/preview?v=" + new Date().getTime();
             iframeInventario.style.width = "100%";
             iframeInventario.style.height = "600px"; 
@@ -161,18 +152,15 @@ function cerrarVisor() {
 }
 
 
-// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL (ACTUALIZADA) ---
+// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL ---
 const btnPlan = document.getElementById('btnReportes');
 const visorPlan = document.getElementById('contenedorPlan');
 const iframePlan = document.getElementById('iframePlan');
 
-// URL de la API del PDF Plan Anual recién creada
 const URL_API_ANUAL_PDF = "https://script.google.com/macros/s/AKfycbzfbN73_IyRlxDRtALXREKWM9UTYMhTFERvGx-6OVewPkVYyeKjCfkywwP8BhYtVaQ/exec";
 
-// Variable global para almacenar el ID dinámico del ANUAL.pdf
 let pdfAnualIdDinamico = "";
 
-// Función para ir a buscar el ID del archivo "ANUAL.pdf" por su nombre a la carpeta de Drive
 function cargarIdPdfAnualDinamico() {
     const urlConsulta = URL_API_ANUAL_PDF + "?action=get_pdf";
     
@@ -191,15 +179,13 @@ function cargarIdPdfAnualDinamico() {
         });
 }
 
-// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfAnualDinamico();
 
 if (btnPlan) {
     btnPlan.addEventListener('click', function() {
-        // Si la conexión es lenta y la API aún no devuelve el ID
         if (!pdfAnualIdDinamico) {
             alert("El sistema aún está localizando el archivo ANUAL.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfAnualDinamico(); // Reintentamos la consulta
+            cargarIdPdfAnualDinamico();
             return;
         }
 
@@ -229,4 +215,240 @@ function cerrarPlan() {
     if (vp) vp.style.display = "none";
     if (ip) ip.src = "";
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// --- 4. LÓGICA DE FORMULARIOS BODEGA (INGRESO / AUTOCOMPLETADO / ENVÍO) ---
+const urlWebApp = "https://script.google.com/macros/s/AKfycbwZQv7ZFhkx7PuoRdh7Vq2AjUK-cVAK8QYyM2lnjXrwlqJMQFR_h2inn7KIlWHi6sOj3A/exec";
+
+function toggleMenuBodega() {
+    const menu = document.getElementById("menuBodegaOpciones");
+    const fIng = document.getElementById("contenedorIngreso");
+    const fEgr = document.getElementById("contenedorEgreso");
+    
+    if (fIng) fIng.style.display = "none";
+    if (fEgr) fEgr.style.display = "none";
+
+    if (menu) {
+        if (menu.style.display === "block") {
+            menu.style.display = "none";
+        } else {
+            menu.style.display = "block";
+            menu.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+}
+
+function mostrarFormIngreso() {
+    const menu = document.getElementById("menuBodegaOpciones");
+    const fEgr = document.getElementById("contenedorEgreso");
+    const fIng = document.getElementById("contenedorIngreso");
+
+    if (menu) menu.style.display = "none";
+    if (fEgr) fEgr.style.display = "none";
+
+    if (fIng) {
+        fIng.style.display = "block";
+        fIng.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cargarProductosInventario();
+    }
+}
+
+function cerrarFormIngreso() {
+    const fIng = document.getElementById("contenedorIngreso");
+    if (fIng) fIng.style.display = "none";
+}
+
+function mostrarFormEgreso() {
+    const menu = document.getElementById("menuBodegaOpciones");
+    const fIng = document.getElementById("contenedorIngreso");
+    const fEgr = document.getElementById("contenedorEgreso");
+
+    if (menu) menu.style.display = "none";
+    if (fIng) fIng.style.display = "none";
+
+    if (fEgr) {
+        fEgr.style.display = "block";
+        fEgr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function cerrarFormEgreso() {
+    const fEgr = document.getElementById("contenedorEgreso");
+    if (fEgr) fEgr.style.display = "none";
+}
+
+// Envío de datos a la hoja INGRESO DE DATOS (Columnas A a K)
+async function enviarIngreso() {
+    const productoNombre = document.getElementById("ing_Producto").value.trim();
+    const cantidad = document.getElementById("ing_cantidad").value.trim();
+    const rack = document.getElementById("ing_rack").value.trim();
+    const nivel = document.getElementById("ing_nivel").value.trim();
+    const comentario = document.getElementById("ing_comentario").value.trim();
+    const valorGuia = document.getElementById("ing_valor").value.trim();
+    const monedaEl = document.querySelector('input[name="ing_moneda"]:checked');
+    const moneda = monedaEl ? monedaEl.value : "CLP";
+    const usuarioEl = document.getElementById("inputUsuario");
+    const usuario = (usuarioEl && usuarioEl.value.trim() !== "") ? usuarioEl.value.trim() : "Sistema";
+
+    if (!productoNombre || !cantidad) {
+        alert("Por favor completa al menos el Producto y la Cantidad.");
+        return;
+    }
+
+    let codigoProducto = "";
+    const itemEncontrado = mapaProductosCodigos.get(productoNombre.toLowerCase());
+    if (itemEncontrado) {
+        codigoProducto = itemEncontrado;
+    }
+
+    const datosEnvio = {
+        tipoOperacion: "Ingreso",
+        usuario: usuario,
+        codigoProducto: codigoProducto,
+        producto: productoNombre,
+        cantidad: cantidad,
+        rack: rack,
+        nivel: nivel,
+        comentario: comentario,
+        valorGuia: valorGuia,
+        moneda: moneda
+    };
+
+    try {
+        const botonEnviar = event ? event.target : null;
+        if (botonEnviar) {
+            botonEnviar.disabled = true;
+            botonEnviar.innerText = "Enviando...";
+        }
+
+        await fetch(urlWebApp, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(datosEnvio)
+        });
+
+        alert("¡Ingreso registrado correctamente en la hoja 'INGRESO DE DATOS'!");
+        cerrarFormIngreso();
+        
+        document.getElementById("ing_Producto").value = "";
+        document.getElementById("ing_cantidad").value = "";
+        document.getElementById("ing_rack").value = "";
+        document.getElementById("ing_nivel").value = "";
+        document.getElementById("ing_comentario").value = "";
+        document.getElementById("ing_valor").value = "";
+
+        if (botonEnviar) {
+            botonEnviar.disabled = false;
+            botonEnviar.innerText = "Enviar";
+        }
+    } catch (error) {
+        console.error("Error al enviar los datos:", error);
+        alert("Hubo un error al registrar el ingreso. Inténtalo nuevamente.");
+        const botonEnviar = event ? event.target : null;
+        if (botonEnviar) {
+            botonEnviar.disabled = false;
+            botonEnviar.innerText = "Enviar";
+        }
+    }
+}
+
+function enviarEgreso() {
+    alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
+}
+
+// Carga de autocompletado y mapeo de Código de Producto desde la hoja PRODUCTOS
+const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
+let listaProductosInventario = [];
+let mapaProductosCodigos = new Map();
+
+function parsearLineaCSV(linea) {
+    const resultado = [];
+    let inicio = 0;
+    let enComillas = false;
+    for (let i = 0; i < linea.length; i++) {
+        if (linea[i] === '"') {
+            enComillas = !enComillas;
+        } else if (linea[i] === ',' && !enComillas) {
+            let campo = linea.substring(inicio, i).trim();
+            campo = campo.replace(/^"|"$/g, '').trim();
+            resultado.push(campo);
+            inicio = i + 1;
+        }
+    }
+    let ultimoCampo = linea.substring(inicio).trim().replace(/^"|"$/g, '').trim();
+    resultado.push(ultimoCampo);
+    return resultado;
+}
+
+async function cargarProductosInventario() {
+    if (listaProductosInventario.length > 0) return;
+    try {
+        const respuesta = await fetch(urlCSVProductos);
+        const texto = await respuesta.text();
+        const lineas = texto.split("\n");
+        
+        let productosSet = new Set();
+        lineas.forEach((linea, idx) => {
+            if (idx > 0 && linea.trim() !== "") {
+                const columnas = parsearLineaCSV(linea);
+                if (columnas.length > 4 && columnas[4]) {
+                    let codigo = columnas[3] ? columnas[3].trim() : "";
+                    let prod = columnas[4].trim();
+                    if (prod !== "" && prod.toUpperCase() !== "NOMBRE PRODUCTO") {
+                        productosSet.add(prod);
+                        mapaProductosCodigos.set(prod.toLowerCase(), codigo);
+                    }
+                }
+            }
+        });
+        listaProductosInventario = Array.from(productosSet);
+    } catch (e) {
+        console.error("Error cargando productos de la hoja PRODUCTOS:", e);
+    }
+}
+
+const inputProductoIng = document.getElementById('ing_Producto');
+const listaSugerencias = document.getElementById('listaAutocompletado');
+const inputComentarioIng = document.getElementById('ing_comentario');
+
+if (inputProductoIng) {
+    inputProductoIng.addEventListener('input', function() {
+        const valor = this.value.trim();
+        if (listaSugerencias) listaSugerencias.innerHTML = "";
+        
+        if (valor.length < 3) return;
+
+        const valorLower = valor.toLowerCase();
+        const coincidencias = listaProductosInventario.filter(prod => prod.toLowerCase().includes(valorLower));
+
+        coincidencias.forEach(prod => {
+            const itemDiv = document.createElement("div");
+            itemDiv.innerHTML = prod;
+            itemDiv.addEventListener("click", function() {
+                inputProductoIng.value = prod;
+                if (listaSugerencias) listaSugerencias.innerHTML = "";
+            });
+            if (listaSugerencias) listaSugerencias.appendChild(itemDiv);
+        });
+
+        const otroDiv = document.createElement("div");
+        otroDiv.innerHTML = "<strong>OTRO</strong>";
+        otroDiv.style.color = "#0070f3";
+        otroDiv.addEventListener("click", function() {
+            inputProductoIng.value = "OTRO";
+            if (inputComentarioIng) inputComentarioIng.value = "Ingresa aquí el nombre del producto para su creación";
+            if (listaSugerencias) listaSugerencias.innerHTML = "";
+        });
+        if (listaSugerencias) listaSugerencias.appendChild(otroDiv);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target !== inputProductoIng && listaSugerencias) {
+            listaSugerencias.innerHTML = "";
+        }
+    });
 }
