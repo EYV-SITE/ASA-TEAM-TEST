@@ -219,7 +219,7 @@ function cerrarPlan() {
 
 
 // --- 4. LÓGICA DE FORMULARIOS BODEGA (INGRESO / AUTOCOMPLETADO / ENVÍO) ---
-const urlWebApp = "https://script.google.com/macros/s/AKfycbwZQv7ZFhkx7PuoRdh7Vq2AjUK-cVAK8QYyM2lnjXrwlqJMQFR_h2inn7KIlWHi6sOj3A/exec";
+const urlWebApp = "https://script.google.com/macros/s/AKfycbwcqM2deqVr_xb64orkB4DqImVNTm8Mf8n-dnPsOzyHuOnuSpbcgWz1fhm1ewJaXJaE/exec";
 
 function toggleMenuBodega() {
     const menu = document.getElementById("menuBodegaOpciones");
