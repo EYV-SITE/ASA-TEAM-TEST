@@ -306,10 +306,11 @@
             </div>
 
             <!-- Formulario 2B: EGRESO BODEGA (dos cuadros: 1. Consulta de Stock / 2. Egreso) -->
-            <div id="contenedorEgreso" style="display:none; max-width: 500px; margin: 15px auto; text-align: left;">
+            <div id="contenedorEgreso" style="display:none; max-width: 960px; margin: 15px auto; text-align: left;">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px 20px; align-items: stretch;">
 
                 <!-- Cuadro 1: Consulta de Stock -->
-                <div style="padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px;">
+                <div style="flex: 1 1 400px; min-width: 0; padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box;">
                     <h3 style="color: #003D75; margin: 0 0 4px 0; text-align: center;">1. Consulta de Stock</h3>
                     <p style="margin: 0 0 14px 0; font-size: 13px; color: #555; text-align: center;">Escribe al menos 3 letras, elige el producto y presiona Buscar.</p>
 
@@ -357,7 +358,7 @@
                 </div>
 
                 <!-- Cuadro 2: Egreso Bodega -->
-                <div style="padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box;">
+                <div style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box;">
                     <h3 style="color: #000; margin: 0 0 14px 0; text-align: center;">2. Egreso Bodega</h3>
 
                     <div id="eg_resumen" style="background: #e3efff; border-radius: 4px; padding: 10px 12px; font-size: 14px; color: #555; margin-bottom: 12px;">Busca y selecciona un producto en el cuadro 1.</div>
@@ -370,10 +371,11 @@
                     <label for="eg_guia" style="display: block; font-weight: bold; margin-bottom: 4px;">Guía de Despacho N°:</label>
                     <input type="text" id="eg_guia" autocomplete="off" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #8a94a3; border-radius: 4px; font-size: 15px; margin-bottom: 16px;">
 
-                    <div style="text-align: center; display: flex; gap: 10px;">
+                    <div style="text-align: center; display: flex; gap: 10px; margin-top: auto;">
                         <button onclick="enviarEgreso()" style="background-color: #0070f3; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Enviar</button>
                         <button onclick="cerrarFormEgreso()" style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Cancelar</button>
                     </div>
+                </div>
                 </div>
             </div>
 
