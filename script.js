@@ -4,8 +4,7 @@
 // =========================================================================
 
 // --- 1. CONFIGURACIÓN DEL SISTEMA DE LOGIN ---
-// URL que maneja la base de datos de usuarios y claves (NO MODIFICAR)
-const URL_API_LOGIN = "https://script.google.com/macros/s/AKfycbzifh_OFapV6c7LAbHuN8_nhgXp04eg6PmnTzTeyQ3hfZ4d8sYhghDd69-R1DkDcnac/exec"; 
+const URL_API_LOGIN = "https://script.google.com/macros/s/AKfycbzifh_OFapV6c7LAbHuN8_nhgXp04eg6PmnTzTeyQ3hfZ4d8sYhghDd69-R1DkDcnac/exec";
 
 const seccionLogin = document.getElementById('seccion-login');
 const seccionContenido = document.getElementById('contenido');
@@ -26,7 +25,6 @@ if (btnIngresar) {
         btnIngresar.disabled = true;
         if (mensajeError) mensajeError.style.display = "none";
 
-        // Consulta al Google Sheet de USUARIOS en segundo plano
         fetch(URL_API_LOGIN)
             .then(response => response.json())
             .then(usuarios => {
@@ -77,35 +75,23 @@ const btnCancelarModal = document.getElementById('btnCancelarModal');
 const visor = document.getElementById('contenedorPDF');
 const iframeInventario = document.getElementById('iframeInventario');
 
-// Enlace dinámico para la versión editable
 const urlEditable = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/edit?rm=minimal&gid=689203295";
-
-// URL de la API del PDF Inventario para buscar el archivo por nombre
 const URL_API_PDF = "https://script.google.com/macros/s/AKfycbwY5qzIVzXSzfa0-MXuJquOdU8LR8Z4EGT55ltRXx6-QxhiizzJ9nco09o41lhH3DI/exec";
 
-// Variable global donde almacenaremos el ID dinámico obtenido desde Drive
 let pdfIdDinamico = "";
 
-// Función para ir a buscar el ID del archivo "PLAN.pdf" por su nombre a tu carpeta de Drive
 function cargarIdPdfDinamico() {
     const urlConsulta = URL_API_PDF + "?action=get_pdf";
-    
     fetch(urlConsulta)
         .then(response => response.json())
         .then(data => {
             if (data && data.status === "success") {
                 pdfIdDinamico = data.id;
-                console.log("ID de PDF cargado con éxito: " + pdfIdDinamico);
-            } else {
-                console.error("Error al buscar el PDF en Drive: ", data.message);
             }
         })
-        .catch(err => {
-            console.error("Error de conexión con la API de Google al buscar el PDF:", err);
-        });
+        .catch(err => console.error("Error buscando PDF:", err));
 }
 
-// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfDinamico();
 
 if (botonInventario) {
@@ -123,15 +109,13 @@ if (btnOptEditable) {
 
 if (btnOptPDF) {
     btnOptPDF.addEventListener('click', function() {
-        // En caso de que la conexión sea lenta y la API del PDF no haya devuelto el ID aún
         if (!pdfIdDinamico) {
-            alert("El sistema aún está localizando el archivo PLAN.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfDinamico(); // Volvemos a intentar la consulta
+            alert("El sistema aún está localizando el archivo PLAN.pdf en tu Drive. Espera un momento.");
+            cargarIdPdfDinamico();
             return;
         }
 
         if (iframeInventario) {
-            // Reconstrucción dinámica del visor apuntando al ID obtenido por nombre
             iframeInventario.src = "https://drive.google.com/file/d/" + pdfIdDinamico + "/preview?v=" + new Date().getTime();
             iframeInventario.style.width = "100%";
             iframeInventario.style.height = "600px"; 
@@ -161,45 +145,33 @@ function cerrarVisor() {
 }
 
 
-// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL (ACTUALIZADA) ---
+// --- 3. LÓGICA PARA VISOR DEL PLAN ANUAL ---
 const btnPlan = document.getElementById('btnReportes');
 const visorPlan = document.getElementById('contenedorPlan');
 const iframePlan = document.getElementById('iframePlan');
-
-// URL de la API del PDF Plan Anual recién creada
 const URL_API_ANUAL_PDF = "https://script.google.com/macros/s/AKfycbzfbN73_IyRlxDRtALXREKWM9UTYMhTFERvGx-6OVewPkVYyeKjCfkywwP8BhYtVaQ/exec";
 
-// Variable global para almacenar el ID dinámico del ANUAL.pdf
 let pdfAnualIdDinamico = "";
 
-// Función para ir a buscar el ID del archivo "ANUAL.pdf" por su nombre a la carpeta de Drive
 function cargarIdPdfAnualDinamico() {
     const urlConsulta = URL_API_ANUAL_PDF + "?action=get_pdf";
-    
     fetch(urlConsulta)
         .then(response => response.json())
         .then(data => {
             if (data && data.status === "success") {
                 pdfAnualIdDinamico = data.id;
-                console.log("ID de PDF Anual cargado con éxito: " + pdfAnualIdDinamico);
-            } else {
-                console.error("Error al buscar el ANUAL.pdf en Drive: ", data.message);
             }
         })
-        .catch(err => {
-            console.error("Error de conexión con la API de Google al buscar el PDF Anual:", err);
-        });
+        .catch(err => console.error("Error buscando PDF Anual:", err));
 }
 
-// Ejecutamos la consulta inmediatamente al cargar la página para tener el ID listo
 cargarIdPdfAnualDinamico();
 
 if (btnPlan) {
     btnPlan.addEventListener('click', function() {
-        // Si la conexión es lenta y la API aún no devuelve el ID
         if (!pdfAnualIdDinamico) {
-            alert("El sistema aún está localizando el archivo ANUAL.pdf en tu Drive. Por favor, espera 2 segundos e intenta nuevamente.");
-            cargarIdPdfAnualDinamico(); // Reintentamos la consulta
+            alert("El sistema aún está localizando el archivo ANUAL.pdf en tu Drive. Espera un momento.");
+            cargarIdPdfAnualDinamico();
             return;
         }
 
@@ -232,7 +204,84 @@ function cerrarPlan() {
 }
 
 
-// --- 4. LÓGICA DE FORMULARIOS BODEGA (INGRESO / AUTOCOMPLETADO / ENVÍO) ---
+// --- 4. LÓGICA DE RESPONSABLES COMERCIALES (DIRECTORIO DE CLIENTES) ---
+const urlCSVClientes = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnIZ946fJMi0Z43hNigGSDMtY_j3J5P4wXe7YwtPKu_3JT1ObCnKMAhPzlCBJcRrrB_u4YKp2WMQI8/pub?output=csv";
+let datosClientes = [];
+
+async function cargarDatos() {
+    try {
+        const respuesta = await fetch(urlCSVClientes);
+        const texto = await respuesta.text();
+        
+        const filas = texto.split("\n").map(row => row.split(","));
+        const encabezados = filas[0].map(h => h.trim());
+        
+        datosClientes = filas.slice(1).map(fila => {
+            let cliente = {};
+            encabezados.forEach((encabezado, index) => {
+                cliente[encabezado] = fila[index] ? fila[index].trim() : "";
+            });
+            return cliente;
+        }).filter(c => c["CLIENTE"]);
+
+        generarBotones();
+    } catch (error) {
+        const contenedor = document.getElementById("contenedor-botones");
+        if (contenedor) {
+            contenedor.innerHTML = "Error al cargar los datos.";
+        }
+        console.error("Error cargando clientes:", error);
+    }
+}
+
+function generarBotones() {
+    const contenedor = document.getElementById("contenedor-botones");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    datosClientes.forEach((item, index) => {
+        const btn = document.createElement("button");
+        btn.className = "btn-cliente";
+        btn.innerText = item["CLIENTE"];
+        btn.onclick = () => abrirModal(index);
+        contenedor.appendChild(btn);
+    });
+}
+
+function abrirModal(index) {
+    const cliente = datosClientes[index];
+    
+    document.getElementById("modal-titulo").innerText = cliente["CLIENTE"] || "Sin datos";
+    document.getElementById("modal-jefe").innerText = cliente["JEFE DE CUENTAS"] || "-";
+    document.getElementById("modal-email").innerText = cliente["FANUC"] || "-";
+    document.getElementById("modal-contacto").innerText = cliente["EQUIPO ASA"] || "-";
+    document.getElementById("modal-industria").innerText = cliente["TIPO DE INDUSTRIA"] || "-";
+    
+    document.getElementById("modal-cliente").style.display = "flex";
+}
+
+function cerrarModal() {
+    document.getElementById("modal-cliente").style.display = "none";
+}
+
+function toggleResponsables() {
+    const cont = document.getElementById("contenedorResponsables");
+    if (cont.style.display === "none" || cont.style.display === "") {
+        cont.style.display = "block";
+        if (datosClientes.length === 0) {
+            cargarDatos();
+        }
+        setTimeout(() => {
+            cont.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    } else {
+        cont.style.display = "none";
+    }
+}
+
+
+// --- 5. LÓGICA DE FORMULARIOS BODEGA (INGRESO / AUTOCOMPLETADO / ENVÍO) ---
 const urlWebApp = "https://script.google.com/macros/s/AKfycbwZtyPyWHXhNPcYclX7kpozPzQcNj8-mvtjG97HZn5rBOdWZ7l9EbMZf2JASIUUsXeikw/exec";
 
 function toggleMenuBodega() {
@@ -292,7 +341,6 @@ function cerrarFormEgreso() {
     if (fEgr) fEgr.style.display = "none";
 }
 
-// Envío de datos a la hoja INGRESO DATOS (Columnas A a K)
 async function enviarIngreso() {
     const productoNombre = document.getElementById("ing_Producto").value.trim();
     const cantidad = document.getElementById("ing_cantidad").value.trim();
@@ -374,7 +422,6 @@ function enviarEgreso() {
     alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
 }
 
-// Carga de autocompletado y mapeo de Código de Producto desde la hoja PRODUCTOS
 const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
 let listaProductosInventario = [];
 let mapaProductosCodigos = new Map();
@@ -428,7 +475,6 @@ async function cargarProductosInventario() {
             }
         });
         listaProductosInventario = Array.from(productosSet);
-        console.log("Productos cargados para autocompletado:", listaProductosInventario.length);
     } catch (e) {
         console.error("Error cargando productos de la hoja PRODUCTOS:", e);
     }
