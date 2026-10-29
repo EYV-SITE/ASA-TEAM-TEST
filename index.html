@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASA Team Chile</title>
+    <link rel="icon" href="data:,">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -304,56 +305,75 @@
                 </div>
             </div>
 
-            <!-- Formulario 2B: EGRESO BODEGA -->
-            <div id="contenedorEgreso" style="display:none; max-width: 500px; margin: 15px auto; padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; text-align: left; box-sizing: border-box;">
-                <h3 style="color: #000; margin-top: 0; text-align: center;">Egreso Bodega</h3>
-                
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Producto:</label>
-                    <input type="text" id="eg_Producto" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cantidad:</label>
-                    <input type="text" id="eg_cantidad" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                
-                <div style="margin-bottom: 15px; background: #fdfdfd; padding: 12px; border: 1px dashed #ccc; border-radius: 4px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <div style="flex: 1; display: flex; gap: 5px;">
+            <!-- Formulario 2B: EGRESO BODEGA (dos cuadros: 1. Consulta de Stock / 2. Egreso) -->
+            <div id="contenedorEgreso" style="display:none; max-width: 500px; margin: 15px auto; text-align: left;">
+
+                <!-- Cuadro 1: Consulta de Stock -->
+                <div style="padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px;">
+                    <h3 style="color: #003D75; margin: 0 0 4px 0; text-align: center;">1. Consulta de Stock</h3>
+                    <p style="margin: 0 0 14px 0; font-size: 13px; color: #555; text-align: center;">Escribe al menos 3 letras, elige el producto y presiona Buscar.</p>
+
+                    <label for="eg_Producto" style="display: block; font-weight: bold; margin-bottom: 4px;">Producto:</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <div class="autocomplete-container" style="flex: 1; min-width: 0;">
+                            <input type="text" id="eg_Producto" autocomplete="off" placeholder="Escriba al menos 3 letras..." style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #8a94a3; border-radius: 4px; font-size: 15px;">
+                            <div id="eg_listaAutocompletado" class="autocomplete-items"></div>
+                        </div>
+                        <button type="button" id="btnBuscarEgreso" onclick="buscarStockEgreso()" style="width: 120px; margin: 0; padding: 10px; font-size: 16px; flex-shrink: 0;">Buscar</button>
+                    </div>
+                    <p id="eg_mensajeBusqueda" style="margin: 6px 0 0 0; min-height: 18px; font-size: 13px; font-weight: bold; color: #c82333;"></p>
+
+                    <div style="margin-top: 8px; background: #f7f9fc; border: 1px dashed #aab4c3; border-radius: 6px; padding: 14px;">
+                        <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: bold; color: #555;">RESULTADO (solo lectura)</p>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <div style="flex: 1;">
-                                <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Rack</p>
-                                <span id="eg_lbl_rack" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333;">-</span>
+                                <label for="eg_lbl_codigo" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Código ASA</label>
+                                <input type="text" id="eg_lbl_codigo" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px;">
+                            </div>
+                            <div style="width: 90px;">
+                                <label for="eg_lbl_rack" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Rack</label>
+                                <input type="text" id="eg_lbl_rack" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px;">
+                            </div>
+                            <div style="width: 90px;">
+                                <label for="eg_lbl_nivel" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Nivel</label>
+                                <input type="text" id="eg_lbl_nivel" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <label for="eg_lbl_disponible" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Cantidad disponible</label>
+                                <input type="text" id="eg_lbl_disponible" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px; padding: 7px 10px; font-size: 22px; font-weight: bold; color: #004fb3; background: #e3efff; border: 1px solid #9cc4f5;">
                             </div>
                             <div style="flex: 1;">
-                                <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Nivel</p>
-                                <span id="eg_lbl_nivel" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333;">-</span>
+                                <label for="eg_lbl_modificacion" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Última modificación</label>
+                                <input type="text" id="eg_lbl_modificacion" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px; padding: 12px 10px;">
                             </div>
                         </div>
-                        <div style="flex: 1;">
-                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Código ASA</p>
-                            <span id="eg_lbl_codigo" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333;">-</span>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Comentario</p>
-                        <span id="eg_lbl_comentario" style="display: block; padding: 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333; min-height: 20px;">-</span>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div style="flex: 1;">
-                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Cantidad disponible</p>
-                            <span id="eg_lbl_disponible" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #0070f3; font-weight: bold;">-</span>
-                        </div>
-                        <div style="flex: 1;">
-                            <p style="margin: 0 0 2px 0; font-size: 12px; color: #555; font-weight: bold;">Última modificación</p>
-                            <span id="eg_lbl_modificacion" style="display: block; padding: 6px; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; color: #333; font-weight: bold;">-</span>
-                        </div>
+                        <div style="">
+                                <label for="eg_lbl_comentario" style="display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 3px;">Comentario</label>
+                                <input type="text" id="eg_lbl_comentario" readonly value="-" style="width: 100%; padding: 9px 10px; box-sizing: border-box; font-size: 15px; color: #222; background: #e9eef5; border: 1px solid #ccd5e1; border-radius: 4px;">
+                            </div>
                     </div>
                 </div>
-                
-                <div style="text-align: center; display: flex; gap: 10px;">
-                    <button onclick="enviarEgreso()" style="background-color: #0070f3; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Enviar</button>
-                    <button onclick="cerrarFormEgreso()" style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Cancelar</button>
+
+                <!-- Cuadro 2: Egreso Bodega -->
+                <div style="padding: 20px; background: #fff; border: 2px solid #0070f3; border-radius: 8px; box-sizing: border-box;">
+                    <h3 style="color: #000; margin: 0 0 14px 0; text-align: center;">2. Egreso Bodega</h3>
+
+                    <div id="eg_resumen" style="background: #e3efff; border-radius: 4px; padding: 10px 12px; font-size: 14px; color: #555; margin-bottom: 12px;">Busca y selecciona un producto en el cuadro 1.</div>
+
+                    <label for="eg_cantidad" style="display: block; font-weight: bold; margin-bottom: 4px;">Cantidad a retirar:</label>
+                    <input type="text" id="eg_cantidad" inputmode="numeric" autocomplete="off" oninput="validarCantidadEgreso()" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #8a94a3; border-radius: 4px; font-size: 15px;">
+                    <p id="eg_hint" style="margin: 4px 0 0 0; font-size: 12px; color: #555;">Máximo disponible: -</p>
+                    <p id="eg_mensaje" style="margin: 4px 0 8px 0; min-height: 18px; font-size: 13px; font-weight: bold; color: #c82333;"></p>
+
+                    <label for="eg_guia" style="display: block; font-weight: bold; margin-bottom: 4px;">Guía de Despacho N°:</label>
+                    <input type="text" id="eg_guia" autocomplete="off" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #8a94a3; border-radius: 4px; font-size: 15px; margin-bottom: 16px;">
+
+                    <div style="text-align: center; display: flex; gap: 10px;">
+                        <button onclick="enviarEgreso()" style="background-color: #0070f3; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Enviar</button>
+                        <button onclick="cerrarFormEgreso()" style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; margin: 0;">Cancelar</button>
+                    </div>
                 </div>
             </div>
 
@@ -423,6 +443,6 @@
         <p>&copy; EyV Solutions - 2026 | Developed exclusively for ASA AUTOMATION SpA</p>
     </footer>
 
-    <script src="script.js?v=1"></script>
+    <script src="script.js?v=2"></script>
 </body>
 </html>
