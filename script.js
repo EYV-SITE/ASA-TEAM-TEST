@@ -333,12 +333,14 @@ function mostrarFormEgreso() {
     if (fEgr) {
         fEgr.style.display = "block";
         fEgr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cargarProductosEgreso();
     }
 }
 
 function cerrarFormEgreso() {
     const fEgr = document.getElementById("contenedorEgreso");
     if (fEgr) fEgr.style.display = "none";
+    reiniciarFormEgreso();
 }
 
 async function enviarIngreso() {
@@ -416,10 +418,6 @@ async function enviarIngreso() {
             botonEnviar.innerText = "Enviar";
         }
     }
-}
-
-function enviarEgreso() {
-    alert("Acción de envío de Egreso (Pendiente de integrar con base de datos/backend).");
 }
 
 const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
@@ -519,5 +517,158 @@ if (inputProductoIng) {
         if (e.target !== inputProductoIng && listaSugerencias) {
             listaSugerencias.innerHTML = "";
         }
+    });
+}
+
+
+// --- 6. LÓGICA DE EGRESO BODEGA (CONSULTA DE STOCK + RETIRO) ---
+// Hoja PRODUCTOS (CSV): 0 ITEM, 3 CODIGO, 4 NOMBRE PRODUCTO, 5 INGRESO, 6 EGRESO, 7 TOTAL (disponible)
+let productosEgreso = [];
+let productoEgresoSel = null;
+
+const egInput = document.getElementById('eg_Producto');
+const egLista = document.getElementById('eg_listaAutocompletado');
+
+function etiquetaEgreso(p) {
+    return p.nombre + " (ítem " + p.item + ")";
+}
+
+function mensajeBusquedaEgreso(texto) {
+    const el = document.getElementById("eg_mensajeBusqueda");
+    if (el) el.innerText = texto;
+}
+
+async function cargarProductosEgreso() {
+    if (productosEgreso.length > 0) return;
+    try {
+        const respuesta = await fetch(urlCSVProductos);
+        const texto = await respuesta.text();
+        texto.split("\n").forEach((linea, idx) => {
+            if (idx === 0 || linea.trim() === "") return;
+            const c = parsearLineaCSV(linea);
+            const item = c[0], nombre = c[4], total = c[7];
+            // Solo filas con ITEM numérico, nombre y TOTAL numérico
+            if (!/^\d+$/.test(item) || !nombre || total === "" || isNaN(total)) return;
+            productosEgreso.push({ item: item, codigo: c[3] || "", nombre: nombre, disponible: Number(total) });
+        });
+    } catch (e) {
+        console.error("Error cargando productos para egreso:", e);
+        mensajeBusquedaEgreso("No se pudo cargar la lista de productos. Inténtalo de nuevo.");
+    }
+}
+
+function limpiarResultadoEgreso() {
+    ["eg_lbl_codigo", "eg_lbl_rack", "eg_lbl_nivel", "eg_lbl_disponible", "eg_lbl_modificacion", "eg_lbl_comentario"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "-";
+    });
+    const resumen = document.getElementById("eg_resumen");
+    if (resumen) resumen.innerText = "Busca y selecciona un producto en el cuadro 1.";
+    const hint = document.getElementById("eg_hint");
+    if (hint) hint.innerText = "Máximo disponible: -";
+}
+
+function reiniciarFormEgreso() {
+    productoEgresoSel = null;
+    if (egInput) egInput.value = "";
+    if (egLista) egLista.innerHTML = "";
+    const cant = document.getElementById("eg_cantidad");
+    if (cant) cant.value = "";
+    const guia = document.getElementById("eg_guia");
+    if (guia) guia.value = "";
+    const msg = document.getElementById("eg_mensaje");
+    if (msg) msg.innerText = "";
+    mensajeBusquedaEgreso("");
+    limpiarResultadoEgreso();
+}
+
+function mostrarResultadoEgreso(p) {
+    document.getElementById("eg_lbl_codigo").value = p.codigo || "-";
+    document.getElementById("eg_lbl_disponible").value = p.disponible;
+    // PENDIENTE: Rack, Nivel, Comentario y Última modificación no están en la hoja PRODUCTOS.
+    // Se completarán al conectar la hoja INGRESO DATOS.
+    document.getElementById("eg_lbl_rack").value = "-";
+    document.getElementById("eg_lbl_nivel").value = "-";
+    document.getElementById("eg_lbl_comentario").value = "-";
+    document.getElementById("eg_lbl_modificacion").value = "-";
+    document.getElementById("eg_resumen").innerHTML = "<span style='color:#555'>Retirarás:</span> <strong></strong>";
+    document.getElementById("eg_resumen").querySelector("strong").innerText = etiquetaEgreso(p);
+    document.getElementById("eg_hint").innerText = "Máximo disponible: " + Math.max(0, p.disponible);
+    validarCantidadEgreso();
+}
+
+async function buscarStockEgreso() {
+    mensajeBusquedaEgreso("");
+    await cargarProductosEgreso();
+    if (!productoEgresoSel) {
+        const texto = egInput.value.trim().toLowerCase();
+        const exactos = productosEgreso.filter(p => p.nombre.toLowerCase() === texto || etiquetaEgreso(p).toLowerCase() === texto);
+        if (exactos.length === 1) {
+            productoEgresoSel = exactos[0];
+        } else {
+            mensajeBusquedaEgreso(exactos.length > 1
+                ? "Hay varios productos con ese nombre. Elige uno de la lista de sugerencias."
+                : "Selecciona un producto de la lista de sugerencias.");
+            return;
+        }
+    }
+    mostrarResultadoEgreso(productoEgresoSel);
+}
+
+// Valida la cantidad a retirar y muestra el mensaje correspondiente
+function validarCantidadEgreso() {
+    const valor = document.getElementById("eg_cantidad").value.trim();
+    const msg = document.getElementById("eg_mensaje");
+    let error = "";
+    if (valor !== "") {
+        if (!/^\d+$/.test(valor)) {
+            error = "Caracteres no válidos. Ingresa solo números enteros positivos.";
+        } else if (Number(valor) === 0) {
+            error = "La cantidad debe ser mayor a 0.";
+        } else if (productoEgresoSel && Number(valor) > productoEgresoSel.disponible) {
+            error = "No existe stock suficiente. Disponible: " + Math.max(0, productoEgresoSel.disponible) + ".";
+        }
+    }
+    msg.innerText = error;
+    return valor !== "" && error === "";
+}
+
+function enviarEgreso() {
+    if (!productoEgresoSel) {
+        mensajeBusquedaEgreso("Primero busca y selecciona un producto.");
+        return;
+    }
+    if (document.getElementById("eg_cantidad").value.trim() === "") {
+        document.getElementById("eg_mensaje").innerText = "Ingresa la cantidad a retirar.";
+        return;
+    }
+    if (!validarCantidadEgreso()) return;
+    alert("Validación correcta. El envío del egreso aún no está conectado a la hoja (pendiente).");
+}
+
+if (egInput) {
+    egInput.addEventListener('input', function() {
+        productoEgresoSel = null;
+        limpiarResultadoEgreso();
+        mensajeBusquedaEgreso("");
+        if (egLista) egLista.innerHTML = "";
+
+        const valor = this.value.trim().toLowerCase();
+        if (valor.length < 3) return;
+
+        productosEgreso.filter(p => p.nombre.toLowerCase().includes(valor)).slice(0, 30).forEach(p => {
+            const itemDiv = document.createElement("div");
+            itemDiv.innerText = etiquetaEgreso(p);
+            itemDiv.addEventListener("click", function() {
+                egInput.value = etiquetaEgreso(p);
+                productoEgresoSel = p;
+                egLista.innerHTML = "";
+            });
+            egLista.appendChild(itemDiv);
+        });
+    });
+
+    document.addEventListener("click", function(e) {
+        if (e.target !== egInput && egLista) egLista.innerHTML = "";
     });
 }
