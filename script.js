@@ -530,7 +530,7 @@ const egInput = document.getElementById('eg_Producto');
 const egLista = document.getElementById('eg_listaAutocompletado');
 
 function etiquetaEgreso(p) {
-    return p.nombre + " (ítem " + p.item + ")";
+    return p.nombre;
 }
 
 function mensajeBusquedaEgreso(texto) {
@@ -546,10 +546,10 @@ async function cargarProductosEgreso() {
         texto.split("\n").forEach((linea, idx) => {
             if (idx === 0 || linea.trim() === "") return;
             const c = parsearLineaCSV(linea);
-            const item = c[0], nombre = c[4], total = c[7];
-            // Solo filas con ITEM numérico, nombre y TOTAL numérico
-            if (!/^\d+$/.test(item) || !nombre || total === "" || isNaN(total)) return;
-            productosEgreso.push({ item: item, codigo: c[3] || "", nombre: nombre, disponible: Number(total) });
+            const item = c[0], codigo = (c[3] || "").toUpperCase(), nombre = c[4];
+            // Solo filas con ITEM numérico, nombre y un código válido (letras + 4 números)
+            if (!/^\d+$/.test(item) || !nombre || !/^[A-Z]{1,2}\d{4}$/.test(codigo)) return;
+            productosEgreso.push({ item: item, codigo: codigo, nombre: nombre, consultado: false });
         });
     } catch (e) {
         console.error("Error cargando productos para egreso:", e);
@@ -582,17 +582,19 @@ function reiniciarFormEgreso() {
     limpiarResultadoEgreso();
 }
 
-function mostrarResultadoEgreso(p) {
-    document.getElementById("eg_lbl_codigo").value = p.codigo || "-";
+function mostrarResultadoEgreso(p, d) {
+    // d = respuesta del servidor (Apps Script): codigo, disponible, rack, nivel, comentario, fecha
+    p.disponible = Number(d.disponible) || 0;
+    p.consultado = true;
+    document.getElementById("eg_lbl_codigo").value = d.codigo || p.codigo || "-";
     document.getElementById("eg_lbl_disponible").value = p.disponible;
-    // PENDIENTE: Rack, Nivel, Comentario y Última modificación no están en la hoja PRODUCTOS.
-    // Se completarán al conectar la hoja INGRESO DATOS.
-    document.getElementById("eg_lbl_rack").value = "-";
-    document.getElementById("eg_lbl_nivel").value = "-";
-    document.getElementById("eg_lbl_comentario").value = "-";
-    document.getElementById("eg_lbl_modificacion").value = "-";
-    document.getElementById("eg_resumen").innerHTML = "<span style='color:#555'>Retirarás:</span> <strong></strong>";
-    document.getElementById("eg_resumen").querySelector("strong").innerText = etiquetaEgreso(p);
+    document.getElementById("eg_lbl_rack").value = d.rack || "-";
+    document.getElementById("eg_lbl_nivel").value = d.nivel || "-";
+    document.getElementById("eg_lbl_comentario").value = d.comentario || "-";
+    document.getElementById("eg_lbl_modificacion").value = d.fecha || "-";
+    const resumen = document.getElementById("eg_resumen");
+    resumen.innerHTML = "<span style='color:#555'>Retirarás:</span> <strong></strong>";
+    resumen.querySelector("strong").innerText = etiquetaEgreso(p);
     document.getElementById("eg_hint").innerText = "Máximo disponible: " + Math.max(0, p.disponible);
     validarCantidadEgreso();
 }
@@ -602,7 +604,7 @@ async function buscarStockEgreso() {
     await cargarProductosEgreso();
     if (!productoEgresoSel) {
         const texto = egInput.value.trim().toLowerCase();
-        const exactos = productosEgreso.filter(p => p.nombre.toLowerCase() === texto || etiquetaEgreso(p).toLowerCase() === texto);
+        const exactos = productosEgreso.filter(p => p.nombre.toLowerCase() === texto);
         if (exactos.length === 1) {
             productoEgresoSel = exactos[0];
         } else {
@@ -612,7 +614,27 @@ async function buscarStockEgreso() {
             return;
         }
     }
-    mostrarResultadoEgreso(productoEgresoSel);
+
+    const boton = document.getElementById("btnBuscarEgreso");
+    if (boton) { boton.disabled = true; boton.innerText = "Buscando..."; }
+    try {
+        // Consulta al Apps Script de Bodega (stock, ubicación, comentario y fecha)
+        const url = urlWebApp + "?action=stock&codigo=" + encodeURIComponent(productoEgresoSel.codigo) + "&t=" + Date.now();
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
+        if (datos.status !== "success") {
+            productoEgresoSel.consultado = false;
+            mensajeBusquedaEgreso(datos.message || "No se pudo consultar el stock.");
+            return;
+        }
+        mostrarResultadoEgreso(productoEgresoSel, datos);
+    } catch (e) {
+        console.error("Error consultando stock:", e);
+        if (productoEgresoSel) productoEgresoSel.consultado = false;
+        mensajeBusquedaEgreso("Error de conexión al consultar el stock. Inténtalo de nuevo.");
+    } finally {
+        if (boton) { boton.disabled = false; boton.innerText = "Buscar"; }
+    }
 }
 
 // Valida la cantidad a retirar y muestra el mensaje correspondiente
@@ -636,6 +658,10 @@ function validarCantidadEgreso() {
 function enviarEgreso() {
     if (!productoEgresoSel) {
         mensajeBusquedaEgreso("Primero busca y selecciona un producto.");
+        return;
+    }
+    if (!productoEgresoSel.consultado) {
+        mensajeBusquedaEgreso("Presiona Buscar para consultar el stock antes de enviar.");
         return;
     }
     if (document.getElementById("eg_cantidad").value.trim() === "") {
