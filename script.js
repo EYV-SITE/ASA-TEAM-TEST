@@ -533,6 +533,32 @@ function etiquetaEgreso(p) {
     return p.nombre;
 }
 
+// Interpreta un número entero positivo. Acepta 1000 y 1.000 (punto de miles).
+// Rechaza 1,000 / 1,5 / 1.5 / 0.001 / letras / negativos / 0. Devuelve null si no es válido.
+function parsearEnteroChileno(texto) {
+    const t = String(texto).trim();
+    let n = null;
+    if (/^[1-9]\d{0,8}$/.test(t)) {
+        n = Number(t);
+    } else if (/^[1-9]\d{0,2}(\.\d{3})+$/.test(t)) {
+        n = Number(t.replace(/\./g, ""));
+    }
+    return (n !== null && n <= 1000000000) ? n : null;
+}
+
+// Muestra un entero con punto de miles: 1000 -> 1.000
+function formatearEntero(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Mensaje bajo la guía de despacho (tipo "ok" = verde, otro = rojo)
+function mensajeEgresoResultado(texto, tipo) {
+    const el = document.getElementById("eg_resultado");
+    if (!el) return;
+    el.innerText = texto;
+    el.style.color = (tipo === "ok") ? "#1e7e34" : "#c82333";
+}
+
 function mensajeBusquedaEgreso(texto) {
     const el = document.getElementById("eg_mensajeBusqueda");
     if (el) el.innerText = texto;
@@ -578,6 +604,7 @@ function reiniciarFormEgreso() {
     if (guia) guia.value = "";
     const msg = document.getElementById("eg_mensaje");
     if (msg) msg.innerText = "";
+    mensajeEgresoResultado("", "error");
     mensajeBusquedaEgreso("");
     limpiarResultadoEgreso();
 }
@@ -587,7 +614,7 @@ function mostrarResultadoEgreso(p, d) {
     p.disponible = Number(d.disponible) || 0;
     p.consultado = true;
     document.getElementById("eg_lbl_codigo").value = d.codigo || p.codigo || "-";
-    document.getElementById("eg_lbl_disponible").value = p.disponible;
+    document.getElementById("eg_lbl_disponible").value = formatearEntero(p.disponible);
     document.getElementById("eg_lbl_rack").value = d.rack || "-";
     document.getElementById("eg_lbl_nivel").value = d.nivel || "-";
     document.getElementById("eg_lbl_comentario").value = d.comentario || "-";
@@ -595,7 +622,7 @@ function mostrarResultadoEgreso(p, d) {
     const resumen = document.getElementById("eg_resumen");
     resumen.innerHTML = "<span style='color:#555'>Retirarás:</span> <strong></strong>";
     resumen.querySelector("strong").innerText = etiquetaEgreso(p);
-    document.getElementById("eg_hint").innerText = "Máximo disponible: " + Math.max(0, p.disponible);
+    document.getElementById("eg_hint").innerText = "Máximo disponible: " + formatearEntero(Math.max(0, p.disponible));
     validarCantidadEgreso();
 }
 
@@ -641,21 +668,31 @@ async function buscarStockEgreso() {
 function validarCantidadEgreso() {
     const valor = document.getElementById("eg_cantidad").value.trim();
     const msg = document.getElementById("eg_mensaje");
-    let error = "";
-    if (valor !== "") {
-        if (!/^\d+$/.test(valor)) {
-            error = "Caracteres no válidos. Ingresa solo números enteros positivos.";
-        } else if (Number(valor) === 0) {
-            error = "La cantidad debe ser mayor a 0.";
-        } else if (productoEgresoSel && Number(valor) > productoEgresoSel.disponible) {
-            error = "No existe stock suficiente. Disponible: " + Math.max(0, productoEgresoSel.disponible) + ".";
-        }
+    msg.style.color = "#c82333";
+    if (valor === "") {
+        msg.innerText = "";
+        return false;
     }
-    msg.innerText = error;
-    return valor !== "" && error === "";
+    const n = parsearEnteroChileno(valor);
+    if (n === null) {
+        msg.innerText = "Caracteres no válidos. Ingresa solo números enteros positivos (ej: 1000 o 1.000).";
+        return false;
+    }
+    if (productoEgresoSel && productoEgresoSel.consultado && n > productoEgresoSel.disponible) {
+        msg.innerText = "No existe stock suficiente. Disponible: " + formatearEntero(Math.max(0, productoEgresoSel.disponible)) + ".";
+        return false;
+    }
+    msg.style.color = "#555";
+    msg.innerText = "Se registrará: " + formatearEntero(n);
+    return true;
 }
 
-function enviarEgreso() {
+let enviandoEgreso = false;
+
+async function enviarEgreso() {
+    if (enviandoEgreso) return;
+    mensajeEgresoResultado("", "error");
+
     if (!productoEgresoSel) {
         mensajeBusquedaEgreso("Primero busca y selecciona un producto.");
         return;
@@ -664,12 +701,60 @@ function enviarEgreso() {
         mensajeBusquedaEgreso("Presiona Buscar para consultar el stock antes de enviar.");
         return;
     }
-    if (document.getElementById("eg_cantidad").value.trim() === "") {
+    const cantidadTxt = document.getElementById("eg_cantidad").value.trim();
+    if (cantidadTxt === "") {
         document.getElementById("eg_mensaje").innerText = "Ingresa la cantidad a retirar.";
         return;
     }
     if (!validarCantidadEgreso()) return;
-    alert("Validación correcta. El envío del egreso aún no está conectado a la hoja (pendiente).");
+    const cantidad = parsearEnteroChileno(cantidadTxt);
+
+    const guia = document.getElementById("eg_guia").value.trim();
+    if (guia === "") {
+        mensajeEgresoResultado("Ingresa el N° de Guía de Despacho.", "error");
+        return;
+    }
+
+    const usuarioEl = document.getElementById("inputUsuario");
+    const usuario = (usuarioEl && usuarioEl.value.trim() !== "") ? usuarioEl.value.trim() : "Sistema";
+
+    const datosEnvio = {
+        tipoOperacion: "Egreso",
+        usuario: usuario,
+        codigoProducto: productoEgresoSel.codigo,
+        cantidad: cantidad,
+        guiaDespacho: guia
+    };
+
+    const boton = document.getElementById("btnEnviarEgreso");
+    enviandoEgreso = true;
+    if (boton) { boton.disabled = true; boton.innerText = "Enviando..."; }
+
+    try {
+        // text/plain evita el "preflight" de CORS y permite leer la respuesta real del servidor
+        const respuesta = await fetch(urlWebApp, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(datosEnvio)
+        });
+        const resultado = await respuesta.json();
+
+        if (resultado.status === "success") {
+            document.getElementById("eg_cantidad").value = "";
+            document.getElementById("eg_guia").value = "";
+            document.getElementById("eg_mensaje").innerText = "";
+            await buscarStockEgreso();   // refresca stock y fecha de última modificación
+            mensajeEgresoResultado("Egreso registrado correctamente. Stock disponible: " + formatearEntero(resultado.disponible) + ".", "ok");
+        } else {
+            mensajeEgresoResultado(resultado.message || "El servidor no pudo registrar el egreso.", "error");
+        }
+    } catch (e) {
+        console.error("Error al enviar el egreso:", e);
+        mensajeEgresoResultado("No se pudo confirmar el envío. Presiona Buscar para ver el stock actual antes de reintentar.", "error");
+    } finally {
+        enviandoEgreso = false;
+        if (boton) { boton.disabled = false; boton.innerText = "Enviar"; }
+    }
 }
 
 if (egInput) {
@@ -698,3 +783,8 @@ if (egInput) {
         if (e.target !== egInput && egLista) egLista.innerHTML = "";
     });
 }
+
+["eg_cantidad", "eg_guia", "eg_Producto"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", () => mensajeEgresoResultado("", "error"));
+});
