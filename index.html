@@ -196,6 +196,7 @@
         }
         .close-btn:hover { color: #000; }
     </style>
+    <link rel="stylesheet" href="catalogos.css?v=1">
 </head>
 <body>
 
@@ -413,6 +414,35 @@
 
             <!-- Botón 5 -->
             <button id="btnConfig">Catalogos/Manuales</button>
+
+            <!-- Vista de Catálogos y Manuales (lógica en catalogos.js, estilos en catalogos.css) -->
+            <div id="contenedorCatalogos">
+                <div class="cat-barra">
+                    <h3>Catálogos y Manuales</h3>
+                    <div class="cat-acciones">
+                        <button type="button" id="catActualizar" class="cat-btn cat-btn-claro" title="Volver a leer la carpeta de Drive">Actualizar</button>
+                        <button type="button" id="catCerrar" class="cat-btn cat-btn-claro">Cerrar</button>
+                    </div>
+                </div>
+                <div class="cat-herramientas">
+                    <nav id="catRuta" class="cat-ruta" aria-label="Ubicación"></nav>
+                    <input type="search" id="catBuscar" class="cat-buscar" placeholder="Buscar en esta carpeta..." aria-label="Buscar en esta carpeta" autocomplete="off">
+                </div>
+                <div id="catLista" class="cat-lista" aria-live="polite"></div>
+            </div>
+
+            <!-- Visor de PDF de catálogos -->
+            <div id="catVisor" role="dialog" aria-modal="true" aria-labelledby="catVisorTitulo">
+                <div class="cat-visor-panel">
+                    <div class="cat-visor-barra">
+                        <span id="catVisorTitulo" class="cat-visor-titulo"></span>
+                        <a id="catVisorDescargar" class="cat-btn cat-btn-claro" href="#" target="_blank" rel="noopener">Descargar</a>
+                        <a id="catVisorNueva" class="cat-btn cat-btn-claro" href="#" target="_blank" rel="noopener">Abrir en pestaña nueva</a>
+                        <button type="button" id="catVisorCerrar" class="cat-btn cat-btn-claro">Cerrar</button>
+                    </div>
+                    <iframe id="catVisorFrame" title="Visor de PDF" src=""></iframe>
+                </div>
+            </div>
              
         </section>
     </main>
@@ -447,5 +477,6 @@
     </footer>
 
     <script src="script.js?v=4"></script>
+    <script src="catalogos.js?v=1"></script>
 </body>
 </html>
