@@ -357,11 +357,15 @@ async function enviarIngreso() {
     const usuario = (usuarioEl && usuarioEl.value.trim() !== "") ? usuarioEl.value.trim() : "Sistema";
 
     if (!productoIngresoSel) {
-        alert("Selecciona un producto de la lista. Si no existe, elige la opción OTRO.");
+        if (ingInput && ingInput.value.trim() !== "") {
+            mostrarAviso("error", "Producto no válido", "Has ingresado un producto que no existe en stock. Selecciona la opción OTRO para pedir su creación.");
+        } else {
+            mostrarAviso("error", "Falta el producto", "No has seleccionado ningún producto. Elige uno de la lista o la opción OTRO.");
+        }
         return;
     }
     if (!cantidad) {
-        alert("Por favor completa la Cantidad.");
+        mostrarAviso("error", "Falta la cantidad", "Ingresa la cantidad del producto.");
         return;
     }
 
@@ -406,7 +410,7 @@ async function enviarIngreso() {
             body: JSON.stringify(datosEnvio)
         });
 
-        alert("¡Ingreso registrado correctamente en la hoja 'INGRESO DATOS'!");
+        mostrarAviso("ok", "Ingreso registrado", "¡Ingreso registrado correctamente en la hoja 'INGRESO DATOS'!");
         cerrarFormIngreso();
         
         document.getElementById("ing_Producto").value = "";
@@ -422,7 +426,7 @@ async function enviarIngreso() {
         }
     } catch (error) {
         console.error("Error al enviar los datos:", error);
-        alert("Hubo un error al registrar el ingreso. Inténtalo nuevamente.");
+        mostrarAviso("error", "No se pudo enviar", "Hubo un error al registrar el ingreso. Inténtalo nuevamente.");
         const botonEnviar = event ? event.target : null;
         if (botonEnviar) {
             botonEnviar.disabled = false;
@@ -851,5 +855,43 @@ if (modalNuevo) {
     ingNuevoNombre.addEventListener("keydown", function(e) {
         if (e.key === "Enter") aceptarNuevoProducto();
         if (e.key === "Escape") cerrarNuevoProducto();
+    });
+}
+
+
+// --- 8. AVISOS DEL INGRESO (cuadro propio, en reemplazo del alert del navegador) ---
+const modalAviso = document.getElementById('modalAviso');
+const avisoIcono = document.getElementById('avisoIcono');
+const avisoTitulo = document.getElementById('avisoTitulo');
+const avisoMensaje = document.getElementById('avisoMensaje');
+const avisoBoton = document.getElementById('btnAvisoAceptar');
+
+// tipo: "error" (rojo, con X) u "ok" (verde, con ✓)
+function mostrarAviso(tipo, titulo, mensaje) {
+    if (!modalAviso) { alert(mensaje); return; }   // respaldo si faltara el cuadro en el HTML
+    const ok = (tipo === "ok");
+    const color = ok ? "#1e7e34" : "#c82333";
+    avisoIcono.style.background = color;
+    avisoIcono.innerHTML = ok
+        ? '<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M9 21l8 8 14-16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : '<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M10 10L30 30M30 10L10 30" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>';
+    avisoTitulo.innerText = titulo;
+    avisoTitulo.style.color = color;
+    avisoMensaje.innerText = mensaje;
+    avisoMensaje.style.color = color;
+    avisoMensaje.style.textTransform = ok ? "none" : "uppercase";
+    modalAviso.style.display = "flex";
+    avisoBoton.focus();
+}
+
+function cerrarAviso() {
+    modalAviso.style.display = "none";
+}
+
+if (modalAviso) {
+    avisoBoton.addEventListener("click", cerrarAviso);
+    modalAviso.addEventListener("click", function(e) { if (e.target === modalAviso) cerrarAviso(); });
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && modalAviso.style.display === "flex") cerrarAviso();
     });
 }
