@@ -495,7 +495,17 @@
         </div>
     </div>
 
-    <script src="script.js?v=5"></script>
+    <!-- Cuadro de aviso (reemplaza al alert del navegador en el Ingreso) -->
+    <div id="modalAviso" style="display: none; position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,0.55); align-items: center; justify-content: center;">
+        <div role="alertdialog" aria-modal="true" aria-labelledby="avisoTitulo" aria-describedby="avisoMensaje" style="background: #fff; border-radius: 10px; padding: 26px 22px 22px; width: 92%; max-width: 460px; box-sizing: border-box; text-align: center;">
+            <div id="avisoIcono" style="width: 72px; height: 72px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #c82333;"></div>
+            <h3 id="avisoTitulo" style="margin: 0 0 10px 0; font-size: 22px; text-transform: uppercase; color: #c82333;"></h3>
+            <p id="avisoMensaje" style="margin: 0 0 20px 0; font-size: 19px; font-weight: bold; line-height: 1.4; color: #c82333;"></p>
+            <button type="button" id="btnAvisoAceptar" style="display: block; width: 160px; margin: 0 auto; padding: 10px; font-size: 16px;">Aceptar</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=6"></script>
     <script src="catalogos.js?v=1"></script>
 </body>
 </html>
