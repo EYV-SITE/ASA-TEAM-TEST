@@ -313,13 +313,15 @@ function mostrarFormIngreso() {
     if (fIng) {
         fIng.style.display = "block";
         fIng.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        cargarProductosInventario();
+        cargarProductosEgreso();
+        reiniciarProductoIngreso();
     }
 }
 
 function cerrarFormIngreso() {
     const fIng = document.getElementById("contenedorIngreso");
     if (fIng) fIng.style.display = "none";
+    reiniciarProductoIngreso();
 }
 
 function mostrarFormEgreso() {
@@ -344,26 +346,35 @@ function cerrarFormEgreso() {
 }
 
 async function enviarIngreso() {
-    const productoNombre = document.getElementById("ing_Producto").value.trim();
     const cantidad = document.getElementById("ing_cantidad").value.trim();
     const rack = document.getElementById("ing_rack").value.trim();
     const nivel = document.getElementById("ing_nivel").value.trim();
-    const comentario = document.getElementById("ing_comentario").value.trim();
+    const comentarioUsuario = document.getElementById("ing_comentario").value.trim();
     const valorGuia = document.getElementById("ing_valor").value.trim();
     const monedaEl = document.querySelector('input[name="ing_moneda"]:checked');
     const moneda = monedaEl ? monedaEl.value : "CLP";
     const usuarioEl = document.getElementById("inputUsuario");
     const usuario = (usuarioEl && usuarioEl.value.trim() !== "") ? usuarioEl.value.trim() : "Sistema";
 
-    if (!productoNombre || !cantidad) {
-        alert("Por favor completa al menos el Producto y la Cantidad.");
+    if (!productoIngresoSel) {
+        alert("Selecciona un producto de la lista. Si no existe, elige la opción OTRO.");
+        return;
+    }
+    if (!cantidad) {
+        alert("Por favor completa la Cantidad.");
         return;
     }
 
     let codigoProducto = "";
-    const itemEncontrado = mapaProductosCodigos.get(productoNombre.toLowerCase());
-    if (itemEncontrado) {
-        codigoProducto = itemEncontrado;
+    let productoNombre = "";
+    let comentario = comentarioUsuario;
+    if (productoIngresoSel.otro) {
+        // Producto nuevo: sin código; el nombre real va en el comentario
+        productoNombre = "OTRO";
+        comentario = "NUEVO PRODUCTO: " + productoIngresoSel.nombre + (comentarioUsuario ? " | " + comentarioUsuario : "");
+    } else {
+        productoNombre = productoIngresoSel.nombre;
+        codigoProducto = productoIngresoSel.codigo;
     }
 
     const datosEnvio = {
@@ -421,8 +432,6 @@ async function enviarIngreso() {
 }
 
 const urlCSVProductos = "https://docs.google.com/spreadsheets/d/1i_ZB-IuV3Pt1tiE4U8_9uEtLkNdRIZ3B2AXo_y5C6SM/export?format=csv&gid=379760357";
-let listaProductosInventario = [];
-let mapaProductosCodigos = new Map();
 
 function parsearLineaCSV(linea) {
     const resultado = [];
@@ -442,84 +451,6 @@ function parsearLineaCSV(linea) {
     resultado.push(ultimoCampo);
     return resultado;
 }
-
-async function cargarProductosInventario() {
-    if (listaProductosInventario.length > 0) return;
-    try {
-        const respuesta = await fetch(urlCSVProductos);
-        const texto = await respuesta.text();
-        const lineas = texto.split("\n");
-        
-        let productosSet = new Set();
-        lineas.forEach((linea, idx) => {
-            if (idx > 0 && linea.trim() !== "") {
-                const columnas = parsearLineaCSV(linea);
-                if (columnas.length >= 4) {
-                    let codigo = columnas[3] ? columnas[3].trim() : (columnas[4] ? columnas[4].trim() : "");
-                    let prod = "";
-                    
-                    for (let i = 3; i < columnas.length; i++) {
-                        let val = columnas[i] ? columnas[i].trim() : "";
-                        if (val !== "" && isNaN(val) && !val.toUpperCase().includes("CODIGO")) {
-                            prod = val;
-                        }
-                    }
-                    
-                    if (prod && prod.toUpperCase() !== "NOMBRE PRODUCTO" && prod.toUpperCase() !== "CODIGO") {
-                        productosSet.add(prod);
-                        mapaProductosCodigos.set(prod.toLowerCase(), codigo);
-                    }
-                }
-            }
-        });
-        listaProductosInventario = Array.from(productosSet);
-    } catch (e) {
-        console.error("Error cargando productos de la hoja PRODUCTOS:", e);
-    }
-}
-
-const inputProductoIng = document.getElementById('ing_Producto');
-const listaSugerencias = document.getElementById('listaAutocompletado');
-const inputComentarioIng = document.getElementById('ing_comentario');
-
-if (inputProductoIng) {
-    inputProductoIng.addEventListener('input', function() {
-        const valor = this.value.trim();
-        if (listaSugerencias) listaSugerencias.innerHTML = "";
-        
-        if (valor.length < 3) return;
-
-        const valorLower = valor.toLowerCase();
-        const coincidencias = listaProductosInventario.filter(prod => prod.toLowerCase().includes(valorLower));
-
-        coincidencias.forEach(prod => {
-            const itemDiv = document.createElement("div");
-            itemDiv.innerHTML = prod;
-            itemDiv.addEventListener("click", function() {
-                inputProductoIng.value = prod;
-                if (listaSugerencias) listaSugerencias.innerHTML = "";
-            });
-            if (listaSugerencias) listaSugerencias.appendChild(itemDiv);
-        });
-
-        const otroDiv = document.createElement("div");
-        otroDiv.innerHTML = "<strong>OTRO</strong>";
-        otroDiv.style.color = "#0070f3";
-        otroDiv.addEventListener("click", function() {
-            inputProductoIng.value = "OTRO";
-            if (inputComentarioIng) inputComentarioIng.value = "Ingresa aquí el nombre del producto para su creación";
-            if (listaSugerencias) listaSugerencias.innerHTML = "";
-        });
-        if (listaSugerencias) listaSugerencias.appendChild(otroDiv);
-    });
-
-    document.addEventListener("click", function (e) {
-        if (e.target !== inputProductoIng && listaSugerencias) {
-            listaSugerencias.innerHTML = "";
-        }
-    });
-}
-
 
 // --- 6. LÓGICA DE EGRESO BODEGA (CONSULTA DE STOCK + RETIRO) ---
 // Hoja PRODUCTOS (CSV): 0 ITEM, 3 CODIGO, 4 NOMBRE PRODUCTO, 5 INGRESO, 6 EGRESO, 7 TOTAL (disponible)
@@ -788,3 +719,137 @@ if (egInput) {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", () => mensajeEgresoResultado("", "error"));
 });
+
+
+// --- 7. INGRESO BODEGA: SELECCIÓN DE PRODUCTO (LISTA U "OTRO") ---
+// El producto que se envía sale SIEMPRE de una selección: un producto de la lista (con código)
+// o un producto nuevo creado con la opción OTRO. Lo que se escriba sin elegir no se envía.
+let productoIngresoSel = null;   // { codigo, nombre }  o  { otro: true, nombre }
+
+const ingInput = document.getElementById('ing_Producto');
+const ingLista = document.getElementById('listaAutocompletado');
+const ingInfo = document.getElementById('ing_infoProducto');
+const ingBtnCambiar = document.getElementById('btnCambiarProductoIng');
+const modalNuevo = document.getElementById('modalNuevoProducto');
+const ingNuevoNombre = document.getElementById('ing_nuevoNombre');
+const ingNuevoError = document.getElementById('ing_nuevoError');
+
+// Compara nombres sin importar mayúsculas, tildes ni espacios sobrantes
+function normalizarNombre(texto) {
+    return String(texto).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function bloquearProductoIngreso(texto, info) {
+    ingInput.value = texto;
+    ingInput.readOnly = true;
+    ingInput.style.background = "#e9eef5";
+    if (ingLista) ingLista.innerHTML = "";
+    if (ingInfo) ingInfo.innerText = info;
+    if (ingBtnCambiar) ingBtnCambiar.style.display = "block";
+}
+
+function reiniciarProductoIngreso() {
+    productoIngresoSel = null;
+    if (!ingInput) return;
+    ingInput.value = "";
+    ingInput.readOnly = false;
+    ingInput.style.background = "#fff";
+    if (ingLista) ingLista.innerHTML = "";
+    if (ingInfo) ingInfo.innerText = "";
+    if (ingBtnCambiar) ingBtnCambiar.style.display = "none";
+}
+
+function elegirProductoIngreso(p) {
+    productoIngresoSel = { codigo: p.codigo, nombre: p.nombre };
+    bloquearProductoIngreso(p.nombre, "Código ASA: " + p.codigo);
+}
+
+function abrirNuevoProducto() {
+    if (ingLista) ingLista.innerHTML = "";
+    ingNuevoNombre.value = ingInput.value.trim();
+    ingNuevoError.innerText = "";
+    modalNuevo.style.display = "flex";
+    ingNuevoNombre.focus();
+}
+
+function cerrarNuevoProducto() {
+    modalNuevo.style.display = "none";
+}
+
+async function aceptarNuevoProducto() {
+    const nombre = ingNuevoNombre.value.replace(/\s+/g, " ").trim();
+    await cargarProductosEgreso();
+
+    let error = "";
+    if (productosEgreso.length === 0) {
+        error = "No se pudo cargar la lista de productos. Inténtalo de nuevo.";
+    } else if (nombre.length < 3) {
+        error = "Escribe el nombre del producto (mínimo 3 letras).";
+    } else if (nombre.length > 80) {
+        error = "El nombre es demasiado largo (máximo 80 caracteres).";
+    } else if (/^[=+\-@]/.test(nombre)) {
+        error = "El nombre no puede comenzar con = + - o @.";
+    } else {
+        const clave = normalizarNombre(nombre);
+        const existente = productosEgreso.find(p => normalizarNombre(p.nombre) === clave);
+        if (existente) error = "Ese producto ya existe (" + existente.nombre + "). Elígelo de la lista.";
+    }
+    if (error) {
+        ingNuevoError.innerText = error;
+        return;
+    }
+
+    productoIngresoSel = { otro: true, nombre: nombre };
+    bloquearProductoIngreso("OTRO: " + nombre, "Producto nuevo: quedará pendiente de crear en la hoja PRODUCTOS.");
+    cerrarNuevoProducto();
+}
+
+if (ingInput) {
+    ingInput.addEventListener('input', async function() {
+        productoIngresoSel = null;
+        if (ingInfo) ingInfo.innerText = "";
+        if (ingLista) ingLista.innerHTML = "";
+
+        const valor = this.value.trim();
+        if (valor.length < 3) return;
+
+        await cargarProductosEgreso();
+        if (this.value.trim() !== valor) return;   // la persona siguió escribiendo
+
+        const q = normalizarNombre(valor);
+        productosEgreso.filter(p => normalizarNombre(p.nombre).includes(q)).slice(0, 30).forEach(p => {
+            const itemDiv = document.createElement("div");
+            itemDiv.innerText = p.nombre;
+            itemDiv.addEventListener("click", () => elegirProductoIngreso(p));
+            ingLista.appendChild(itemDiv);
+        });
+
+        // OTRO siempre al final de la lista
+        const otroDiv = document.createElement("div");
+        otroDiv.innerHTML = "<strong>OTRO</strong>";
+        otroDiv.style.color = "#0070f3";
+        otroDiv.addEventListener("click", abrirNuevoProducto);
+        ingLista.appendChild(otroDiv);
+    });
+
+    document.addEventListener("click", function(e) {
+        if (e.target !== ingInput && ingLista) ingLista.innerHTML = "";
+    });
+}
+
+if (ingBtnCambiar) {
+    ingBtnCambiar.addEventListener("click", function() {
+        reiniciarProductoIngreso();
+        ingInput.focus();
+    });
+}
+
+if (modalNuevo) {
+    document.getElementById("btnNuevoAceptar").addEventListener("click", aceptarNuevoProducto);
+    document.getElementById("btnNuevoCancelar").addEventListener("click", cerrarNuevoProducto);
+    modalNuevo.addEventListener("click", function(e) { if (e.target === modalNuevo) cerrarNuevoProducto(); });
+    ingNuevoNombre.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") aceptarNuevoProducto();
+        if (e.key === "Escape") cerrarNuevoProducto();
+    });
+}
